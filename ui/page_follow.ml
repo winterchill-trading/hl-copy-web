@@ -97,83 +97,84 @@ let with_chain_id (offer : Agent_offer.t) chain_id : Agent_offer.t =
     }
 ;;
 
-let sign_and_follow
+let approve
   ~(backend : Backend.t)
   ~(wallet : Wallet.t)
   ~(session : Auth.Session.t)
-  ~leader
-  ~scale
-  ~caps
   ~(offer : Agent_offer.t)
   ~include_builder_fee
   =
   let open Deferred.Or_error.Let_syntax in
+  let token = session.token in
   let%bind chain_id = Wallet.chain_id wallet in
   let offer = with_chain_id offer chain_id in
-  let%bind agent_signature =
+  let%bind signature =
     Wallet.sign_typed_data wallet (Approve_agent.typed_data offer.approve_agent)
   in
-  let builder_fee =
-    Option.filter offer.approve_builder_fee ~f:(fun _ -> include_builder_fee)
+  let%bind (_ : Agent_status.t) =
+    backend.agent_approved ~token { approve_agent = offer.approve_agent; signature }
   in
-  let%bind builder_fee_signature =
-    match builder_fee with
-    | None -> return None
-    | Some b ->
-      let%map s = Wallet.sign_typed_data wallet (Approve_builder_fee.typed_data b) in
-      Some s
-  in
-  backend.follow
-    ~token:session.token
-    { leader
-    ; scale
-    ; caps
-    ; approve_agent = offer.approve_agent
-    ; agent_signature
-    ; approve_builder_fee = builder_fee
-    ; builder_fee_signature
-    }
+  match offer.approve_builder_fee with
+  | Some approve_builder_fee when include_builder_fee ->
+    let%bind signature =
+      Wallet.sign_typed_data wallet (Approve_builder_fee.typed_data approve_builder_fee)
+    in
+    let%map (_ : Agent_status.t) =
+      backend.builder_fee ~token { approve_builder_fee; signature }
+    in
+    ()
+  | Some _ | None -> return ()
 ;;
 
-let approval_view
+(* Approves a new agent first when [offer] is given, then creates the follow. *)
+let follow_effect
   ~backend
   ~wallet
   ~session
   ~leader
   ~validated
+  ~offer
+  ~include_builder_fee
+  ~set_status
+  =
+  let open Effect.Let_syntax in
+  match validated with
+  | Error _ -> Effect.Ignore
+  | Ok (scale, caps) ->
+    let%bind () =
+      set_status
+        (Status.Busy
+           (if Option.is_some offer
+            then "Waiting for the signatures in your wallet..."
+            else "Creating the follow..."))
+    in
+    (match%bind
+       Effect.of_deferred_thunk (fun () ->
+         let open Deferred.Or_error.Let_syntax in
+         let%bind () =
+           match offer with
+           | None -> return ()
+           | Some offer -> approve ~backend ~wallet ~session ~offer ~include_builder_fee
+         in
+         (backend : Backend.t).follow
+           ~token:session.Auth.Session.token
+           { leader; scale; caps })
+     with
+     | Ok (_ : Follow.t) ->
+       let%bind () = set_status Status.Idle in
+       Nav.navigate Dashboard
+     | Error e -> set_status (Failed e))
+;;
+
+let approval_view
   ~(offer : Agent_offer.t)
   ~include_builder_fee
   ~set_include_builder_fee
-  ~set_status
+  ~submit
   ~set_offer
   ~busy
+  ~valid
   =
-  let open Effect.Let_syntax in
-  let submit =
-    match validated with
-    | Error _ -> Effect.Ignore
-    | Ok (scale, caps) ->
-      let%bind () =
-        set_status (Status.Busy "Waiting for the signatures in your wallet...")
-      in
-      (match%bind
-         Effect.of_deferred_thunk (fun () ->
-           sign_and_follow
-             ~backend
-             ~wallet
-             ~session
-             ~leader
-             ~scale
-             ~caps
-             ~offer
-             ~include_builder_fee)
-       with
-       | Ok (_ : Follow.t) ->
-         let%bind () = set_status Status.Idle in
-         let%bind () = set_offer None in
-         Nav.navigate Dashboard
-       | Error e -> set_status (Failed e))
-  in
   N.div
     [ N.p
         [ N.text
@@ -220,7 +221,7 @@ let approval_view
         ~attrs:[ A.class_ "actions" ]
         [ Widgets.button
             ~primary:true
-            ~disabled:(busy || Result.is_error validated)
+            ~disabled:(busy || not valid)
             ~on_click:submit
             "Sign and follow"
         ; Widgets.button ~disabled:busy ~on_click:(set_offer None) "Back to settings"
@@ -231,6 +232,7 @@ let approval_view
 let view
   ~(backend : Backend.t)
   ~leader_detail
+  ~agent
   ~session
   ~form
   ~set_form
@@ -268,30 +270,54 @@ let view
             ]
         ]
     | Some ((wallet : Wallet.t), (session : Auth.Session.t)) ->
+      let valid = Result.is_ok validated in
+      let follow ~offer =
+        follow_effect
+          ~backend
+          ~wallet
+          ~session
+          ~leader
+          ~validated
+          ~offer
+          ~include_builder_fee
+          ~set_status
+      in
       (match offer with
-       | Some offer ->
+       | Some o ->
          approval_view
-           ~backend
-           ~wallet
-           ~session
-           ~leader
-           ~validated
-           ~offer
+           ~offer:o
            ~include_builder_fee
            ~set_include_builder_fee
-           ~set_status
+           ~submit:(follow ~offer:(Some o))
            ~set_offer
            ~busy
+           ~valid
        | None ->
          let review =
            let%bind () = set_status (Status.Busy "Requesting an agent key...") in
            match%bind
-             Effect.of_deferred_thunk (fun () -> backend.agent_offer ~token:session.token)
+             Effect.of_deferred_thunk (fun () -> backend.agent_new ~token:session.token)
            with
            | Ok o ->
              let%bind () = set_status Idle in
              set_offer (Some o)
            | Error e -> set_status (Failed e)
+         in
+         let button =
+           match agent with
+           | Remote.Loaded check when not (Agent_check.needs_approval check) ->
+             Widgets.button
+               ~primary:true
+               ~disabled:(busy || not valid)
+               ~on_click:(follow ~offer:None)
+               "Follow"
+           | Remote.Loaded _ ->
+             Widgets.button
+               ~primary:true
+               ~disabled:(busy || not valid)
+               ~on_click:review
+               "Review agent approval"
+           | Idle | Loading | Failed _ -> N.none
          in
          N.div
            [ form_view ~form ~set_form ~errors
@@ -301,14 +327,10 @@ let view
                   ~attrs:[ A.class_ "muted" ]
                   [ N.text ("Target size: " ^ Scale_mode.to_string_hum scale ^ ".") ]
               | Error _ -> N.none)
-           ; N.div
-               ~attrs:[ A.class_ "actions" ]
-               [ Widgets.button
-                   ~primary:true
-                   ~disabled:(busy || Result.is_error validated)
-                   ~on_click:review
-                   "Review agent approval"
-               ]
+           ; (match agent with
+              | Remote.Loaded check -> Widgets.notice (Agent_check.describe check)
+              | other -> Widgets.remote other ~f:(fun _ -> N.none))
+           ; N.div ~attrs:[ A.class_ "actions" ] [ button ]
            ])
   in
   N.div
@@ -337,6 +359,27 @@ let component ~(backend : Backend.t) ~route ~session (local_ graph) =
     | _ -> None
   in
   let leader_detail = Remote.fetch ~equal:Address.equal ~load:backend.leader key graph in
+  (* The agent's status decides whether following needs an approval first. *)
+  let me_key =
+    let%map key and session in
+    match key, session with
+    | Some leader, Some (_, (s : Auth.Session.t)) -> Some (leader, s.token)
+    | _ -> None
+  in
+  let agent =
+    let%map me =
+      Remote.fetch
+        ~equal:(Tuple2.equal ~eq1:Address.equal ~eq2:String.equal)
+        ~load:(fun (_, token) -> backend.me ~token)
+        me_key
+        graph
+    in
+    match (me : Me.t Remote.t) with
+    | Loaded me -> Remote.Loaded (Agent_check.of_status me.agent ~now:(Backend.now_ms ()))
+    | Idle -> Idle
+    | Loading -> Loading
+    | Failed e -> Failed e
+  in
   let form, set_form = Bonsai.state Follow_form.default graph in
   let offer, set_offer = Bonsai.state_opt graph in
   let status, set_status = Bonsai.state Status.Idle graph in
@@ -350,6 +393,7 @@ let component ~(backend : Backend.t) ~route ~session (local_ graph) =
        fun _ -> Effect.Many [ set_offer None; set_status Status.Idle ])
     graph;
   let%map leader_detail
+  and agent
   and session
   and form
   and set_form
@@ -362,6 +406,7 @@ let component ~(backend : Backend.t) ~route ~session (local_ graph) =
   view
     ~backend
     ~leader_detail
+    ~agent
     ~session
     ~form
     ~set_form
