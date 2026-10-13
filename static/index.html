@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>hl-copy</title>
+    <style>
+      :root {
+        --bg: #f6f7f9;
+        --card: #ffffff;
+        --text: #1b1f24;
+        --muted: #667085;
+        --line: #e4e7ec;
+        --accent: #2563eb;
+        --pos: #15803d;
+        --neg: #b91c1c;
+        --warn-bg: #fff7e6;
+        --err-bg: #fdecec;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0f1216;
+          --card: #171b21;
+          --text: #e6e8eb;
+          --muted: #98a2b3;
+          --line: #2a3039;
+          --accent: #60a5fa;
+          --pos: #4ade80;
+          --neg: #f87171;
+          --warn-bg: #2b2414;
+          --err-bg: #2f1717;
+        }
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+      }
+      a { color: var(--accent); text-decoration: none; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+      .muted { color: var(--muted); }
+      .top {
+        display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+        padding: 10px 16px; background: var(--card); border-bottom: 1px solid var(--line);
+      }
+      .brand { font-weight: 700; font-size: 16px; }
+      .top nav { display: flex; gap: 12px; flex: 1; }
+      .top nav a { color: var(--muted); padding: 4px 2px; }
+      .top nav a.active { color: var(--text); border-bottom: 2px solid var(--accent); }
+      .account { display: flex; align-items: center; gap: 8px; }
+      main { max-width: 1200px; margin: 0 auto; padding: 16px; }
+      .card {
+        background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+        padding: 16px; margin-bottom: 16px; overflow-x: auto;
+      }
+      .card h2 { margin: 0 0 12px; font-size: 16px; }
+      .btn {
+        display: inline-block; padding: 6px 12px; border-radius: 6px; cursor: pointer;
+        border: 1px solid var(--line); background: var(--card); color: var(--text); font: inherit;
+      }
+      .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .btn:disabled { opacity: 0.5; cursor: default; }
+      .actions { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; }
+      .badge { font-size: 12px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); }
+      .badge.mock { background: var(--warn-bg); }
+      .badge.running { color: var(--pos); }
+      .badge.paused { color: #b45309; }
+      .badge.stopped { color: var(--muted); }
+      .pos { color: var(--pos); }
+      .neg { color: var(--neg); }
+      table.grid { border-collapse: collapse; width: 100%; }
+      table.grid th, table.grid td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+      table.grid th { font-weight: 600; color: var(--muted); }
+      table.grid .num { text-align: right; font-variant-numeric: tabular-nums; }
+      .sortable { cursor: pointer; user-select: none; }
+      .score { position: relative; min-width: 80px; height: 18px; background: var(--line); border-radius: 4px; }
+      .score-fill { position: absolute; inset: 0 auto 0 0; background: var(--accent); opacity: 0.35; border-radius: 4px; }
+      .score span { position: relative; padding: 0 6px; }
+      .filters, .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 8px; }
+      .field { display: flex; flex-direction: column; gap: 4px; }
+      .field span { font-size: 12px; color: var(--muted); }
+      .field input, .field select {
+        padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px;
+        background: var(--bg); color: var(--text); font: inherit;
+      }
+      .field input.invalid { border-color: var(--neg); }
+      .field .field-error { color: var(--neg); }
+      .check { display: block; margin: 8px 0; }
+      .stats { display: flex; flex-wrap: wrap; gap: 8px 24px; margin: 8px 0 12px; }
+      .stat-label { font-size: 12px; color: var(--muted); }
+      .stat-value { font-weight: 600; }
+      .leader-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+      .leader-head h3 { margin: 0; }
+      .notice { padding: 10px 12px; background: var(--warn-bg); border-radius: 6px; margin: 8px 0; }
+      .error { padding: 10px 12px; background: var(--err-bg); color: var(--neg); border-radius: 6px; margin: 8px 0; white-space: pre-wrap; }
+      .loading { color: var(--muted); margin: 8px 0; }
+      .typed-data { background: var(--bg); padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 12px; }
+      .follow { border-top: 1px solid var(--line); padding: 12px 0; }
+      .follow-head { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+      .equity-chart { width: 100%; height: auto; max-height: 320px; }
+      .equity-chart .grid-line { stroke: var(--line); stroke-width: 1; }
+      .equity-chart .start-line { stroke: var(--muted); stroke-dasharray: 4 4; stroke-width: 1; }
+      .equity-chart .curve { fill: none; stroke-width: 2; }
+      .equity-chart .curve.up { stroke: var(--pos); }
+      .equity-chart .curve.down { stroke: var(--neg); }
+      .equity-chart .axis-label { fill: var(--muted); font-size: 11px; }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script src="main.js"></script>
+  </body>
+</html>
