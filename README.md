@@ -93,6 +93,7 @@ Every request path and body is a type in [`api/api_types.mli`](api/api_types.mli
 | Follow | `POST /follows` | `Follow_request` | `Follow` |
 | Pause, resume | `PATCH /follows/<id>` | `Follow_update` | `Follow` |
 | Stop | `DELETE /follows/<id>` | | `Follow` |
+| Live updates | `GET /ws?token=<token>` | | `Ws_push` frames (`me`, `follow`, `fill`, `error`) |
 
 Everything after login sends `Authorization: Bearer <token>`. A non-2xx reply carries
 `Api_error` (`{"error": "..."}`), which the page shows as `HTTP <code>: <error>`.
@@ -151,6 +152,10 @@ deployed pages.
 - `smoke/live.js`: the same app with `?api=` against an in-memory fake of `hl-copy-api`,
   checking method, path, bearer token and body of every request, the request order of the
   approval flow, and how an error reply is shown.
+  `node smoke/live.js <main.bc.js> . <API URL>` runs it against a real `hl-copy-api`
+  instead (on hl-sim or testnet), signing through hl-copy-api's `tools/dev_wallet.exe`
+  (`DEV_WALLET`, key in `HL_COPY_WALLET_KEY`); hl-copy-api's `scripts/e2e-stack.sh` does
+  this with a throwaway key.
 
 Node must be on `PATH` for the smoke tests.
 
