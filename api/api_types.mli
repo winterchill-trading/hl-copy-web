@@ -342,6 +342,26 @@ module Me : sig
   [@@deriving compare, equal, sexp, yojson]
 end
 
+(** Messages pushed on [GET /ws?token=<token>], one JSON object per text frame:
+
+    - [{"type": "me", "me": <Me>}]: on connect and every status interval;
+    - [{"type": "follow", "follow": <Follow>}]: when a follow changes;
+    - [{"type": "fill", "fill": <Fill>}]: each new fill of the user's account;
+    - [{"type": "error", "error": "..."}]. *)
+module Ws_push : sig
+  type t =
+    | Me of Me.t
+    | Follow of Follow.t
+    | Fill of Fill.t
+    | Error of string
+  [@@deriving compare, equal, sexp, yojson]
+
+  val to_string : t -> string
+
+  (** Raises like [t_of_yojson] on a malformed or unknown message. *)
+  val of_string : string -> t
+end
+
 (** The body of every non-2xx reply. *)
 module Api_error : sig
   type t = { error : string } [@@deriving compare, equal, sexp, yojson]

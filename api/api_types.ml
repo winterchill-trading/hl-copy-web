@@ -465,6 +465,52 @@ module Me = struct
   [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
 end
 
+module Ws_push = struct
+  type t =
+    | Me of Me.t
+    | Follow of Follow.t
+    | Fill of Fill.t
+    | Error of string
+  [@@deriving compare, equal, sexp]
+
+  let yojson_of_t = function
+    | Me me -> `Assoc [ "type", `String "me"; "me", Me.yojson_of_t me ]
+    | Follow f -> `Assoc [ "type", `String "follow"; "follow", Follow.yojson_of_t f ]
+    | Fill f -> `Assoc [ "type", `String "fill"; "fill", Fill.yojson_of_t f ]
+    | Error e -> `Assoc [ "type", `String "error"; "error", `String e ]
+  ;;
+
+  let t_of_yojson json =
+    let field name =
+      match json with
+      | `Assoc fields ->
+        (match List.Assoc.find fields ~equal:String.equal name with
+         | Some v -> v
+         | None ->
+           Ppx_yojson_conv_lib.Yojson_conv.of_yojson_error
+             ("Ws_push: missing field " ^ name)
+             json)
+      | _ -> Ppx_yojson_conv_lib.Yojson_conv.of_yojson_error "Ws_push: not an object" json
+    in
+    match field "type" with
+    | `String "me" -> Me (Me.t_of_yojson (field "me"))
+    | `String "follow" -> Follow (Follow.t_of_yojson (field "follow"))
+    | `String "fill" -> Fill (Fill.t_of_yojson (field "fill"))
+    | `String "error" ->
+      (match field "error" with
+       | `String e -> Error e
+       | other ->
+         Ppx_yojson_conv_lib.Yojson_conv.of_yojson_error
+           "Ws_push: error is not a string"
+           other)
+    | other ->
+      Ppx_yojson_conv_lib.Yojson_conv.of_yojson_error "Ws_push: unknown type" other
+  ;;
+
+  let to_string t = Yojson.Safe.to_string (yojson_of_t t)
+  let of_string s = t_of_yojson (Yojson.Safe.from_string s)
+end
+
 module Api_error = struct
   type t = { error : string }
   [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
