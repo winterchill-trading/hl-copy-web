@@ -27,11 +27,18 @@ let state_badge (s : Follow_state.t) =
     [ N.text (Follow_state.to_string s) ]
 ;;
 
+module Command = struct
+  type t =
+    | Pause
+    | Resume
+    | Stop
+end
+
 let follow_card ~run (f : Follow.t) =
   let command c label = Widgets.button ~on_click:(run f.id c) label in
   let buttons =
     match f.state with
-    | Running -> [ command Follow_command.Pause "Pause"; command Stop "Stop" ]
+    | Running -> [ command Command.Pause "Pause"; command Stop "Stop" ]
     | Paused -> [ command Resume "Resume"; command Stop "Stop" ]
     | Stopped -> []
   in
@@ -55,7 +62,7 @@ let follow_card ~run (f : Follow.t) =
     ]
 ;;
 
-let view ~(dashboard : Dashboard.t) ~run =
+let view ~(dashboard : Me.t) ~run =
   let running =
     List.count dashboard.follows ~f:(fun f -> Follow_state.equal f.state Running)
   in
@@ -68,6 +75,10 @@ let view ~(dashboard : Dashboard.t) ~run =
             ~label:"Follows"
             (N.textf "%d running of %d" running (List.length dashboard.follows))
         ]
+    ; (let check = Agent_check.of_status dashboard.agent ~now:(Backend.now_ms ()) in
+       match check with
+       | Active -> N.none
+       | Missing | Not_approved | Expired _ -> Widgets.notice (Agent_check.describe check))
     ; (match dashboard.follows with
        | [] ->
          N.div
@@ -100,7 +111,7 @@ let component ~(backend : Backend.t) ~route ~session (local_ graph) =
   let dashboard =
     Remote.fetch
       ~equal:Key.equal
-      ~load:(fun (k : Key.t) -> backend.dashboard ~token:k.token)
+      ~load:(fun (k : Key.t) -> backend.me ~token:k.token)
       key
       graph
   in
@@ -117,7 +128,10 @@ let component ~(backend : Backend.t) ~route ~session (local_ graph) =
       let open Effect.Let_syntax in
       (match%bind
          Effect.of_deferred_thunk (fun () ->
-           backend.follow_command ~token:s.token ~id command)
+           match (command : Command.t) with
+           | Pause -> backend.update_follow ~token:s.token ~id { state = Paused }
+           | Resume -> backend.update_follow ~token:s.token ~id { state = Running }
+           | Stop -> backend.stop_follow ~token:s.token ~id)
        with
        | Ok (_ : Follow.t) ->
          let%bind () = set_command_error None in
