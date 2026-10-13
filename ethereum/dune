@@ -1,0 +1,16 @@
+; eip1193.ml is generated from the annotated eip1193.mli by gen_js_api.
+
+(rule
+ (targets eip1193.ml)
+ (deps eip1193.mli)
+ (action
+  (run gen_js_api %{deps})))
+
+; Byte only: it is linked into the js_of_ocaml app, and ojs ships no native .cmx.
+
+(library
+ (name ethereum)
+ (modes byte)
+ (libraries core async_kernel ojs)
+ (preprocess
+  (pps ppx_jane gen_js_api.ppx)))
