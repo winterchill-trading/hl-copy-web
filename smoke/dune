@@ -10,3 +10,16 @@
   (source_tree ../dev))
  (action
   (run node run.js ../bin/main.bc.js ..)))
+
+; The same app against an in-memory fake of hl-copy-api (?api=http://api.test), checking
+; the HTTP contract of every request.
+
+(rule
+ (alias runtest)
+ (deps
+  ../bin/main.bc.js
+  fake_dom.js
+  live.js
+  (source_tree ../dev))
+ (action
+  (run node live.js ../bin/main.bc.js ..)))
