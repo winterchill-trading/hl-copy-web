@@ -8,7 +8,7 @@ open Api_types
 
 val component
   :  backend:Backend.t
-  -> login:(Wallet.t -> Auth.Session.t -> unit Effect.t)
+  -> login:(Wallet.t -> Auth.Session.t -> unit Effect.t) Bonsai.t
   -> session:(Wallet.t * Auth.Session.t) option Bonsai.t
   -> local_ Bonsai.graph
   -> Vdom.Node.t Bonsai.t

@@ -99,6 +99,6 @@ let view ~(backend : Backend.t) ~status ~set_status ~login ~session =
 let component ~backend ~login ~session (local_ graph) =
   let open Bonsai.Let_syntax in
   let status, set_status = Bonsai.state Status.Idle graph in
-  let%map status and set_status and session in
+  let%map status and set_status and session and login in
   view ~backend ~status ~set_status ~login ~session
 ;;
