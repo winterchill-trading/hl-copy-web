@@ -1,0 +1,6 @@
+(library
+ (name api_types)
+ (public_name hl-copy-api-types)
+ (libraries core yojson ppx_yojson_conv_lib)
+ (preprocess
+  (pps ppx_jane ppx_yojson_conv)))
