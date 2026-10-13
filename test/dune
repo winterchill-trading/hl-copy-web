@@ -1,8 +1,10 @@
 (library
  (name hl_copy_web_test)
  (inline_tests
+  (deps
+   (source_tree ../dev))
   (flags
    (:standard -source-tree-root .)))
- (libraries core yojson hl-copy-api-types copy_web_model)
+ (libraries core core_unix.sys_unix yojson hl-copy-api-types copy_web_model)
  (preprocess
   (pps ppx_jane)))
