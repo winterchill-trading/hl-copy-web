@@ -466,5 +466,8 @@ module Endpoint = struct
   let auth_login = "/auth/login"
   let agent = "/agent"
   let follows = "/follows"
-  let follow_command ~id command = sprintf "/follows/%s/%s" id (Follow_command.to_string command)
+
+  let follow_command ~id command =
+    sprintf "/follows/%s/%s" id (Follow_command.to_string command)
+  ;;
 end

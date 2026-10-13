@@ -2,8 +2,8 @@
 
     The API server (hl-copy-api) and this web app both use these types, so a field change
     here is a protocol change: add optional fields with a default, never rename or remove
-    one in place. Every type derives [sexp] for logs and journals and [yojson] for the HTTP
-    bodies.
+    one in place. Every type derives [sexp] for logs and journals and [yojson] for the
+    HTTP bodies.
 
     Two conventions come from the browser build. js_of_ocaml compiles OCaml [int] to a
     32-bit integer, so timestamps and nonces (milliseconds since the epoch, about [2^40])
