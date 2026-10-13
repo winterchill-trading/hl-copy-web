@@ -35,7 +35,9 @@ let sign_in ~(backend : Backend.t) ~set_status ~login (wallet : Wallet.t) =
 
 let connect_injected ~backend ~set_status ~login =
   let open Effect.Let_syntax in
-  match Ethereum.detect () with
+  (* Look for the provider when the button is clicked, not when the page renders: the
+     extension may inject it after the app starts. *)
+  match%bind Effect.of_thunk Ethereum.detect with
   | None ->
     set_status
       (Status.Failed
