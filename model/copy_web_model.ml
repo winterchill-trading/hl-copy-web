@@ -4,3 +4,4 @@
 module Route = Route
 module Format = Format
 module Leader_table = Leader_table
+module Chart = Chart
