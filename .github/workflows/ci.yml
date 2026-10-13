@@ -1,0 +1,22 @@
+name: ci
+on: [push, pull_request]
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: winterchill-trading/infra/.github/actions/ox-setup@main
+      # bonsai_web is not in the oxcaml-base image. It is an opam dependency of
+      # hl-copy-web, so ox-setup installs and caches it; this step only covers a
+      # restored switch that predates the dependency.
+      - run: opam list --installed --silent bonsai_web || opam install bonsai_web --yes
+      - run: opam exec -- dune build
+      - run: opam exec -- dune test
+  obj-magic:
+    uses: winterchill-trading/infra/.github/workflows/obj-magic.yml@main
