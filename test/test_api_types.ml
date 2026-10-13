@@ -201,3 +201,33 @@ let%expect_test "follow states, updates and endpoints" =
     /me
     |}]
 ;;
+
+let%expect_test "websocket pushes" =
+  let fill =
+    { Fill.time = 1760257800000.
+    ; coin = "BTC"
+    ; side = Buy
+    ; px = 100_000.5
+    ; sz = 0.01
+    ; closed_pnl = 0.
+    ; fee = 0.45
+    ; dir = "Open Long"
+    }
+  in
+  let me =
+    { Me.address; account_value = 1000.; total_pnl = 0.; agent = None; follows = [] }
+  in
+  List.iter
+    [ Ws_push.Me me; Fill fill; Error "session expired" ]
+    ~f:(round_trip (module Ws_push));
+  (match Ws_push.of_string {|{"type":"pong"}|} with
+   | exception exn -> print_s [%message (exn : exn)]
+   | t -> print_s [%message "accepted" (t : Ws_push.t)]);
+  [%expect
+    {|
+    {"type":"me","me":{"address":"0xabcdef0123456789abcdef0123456789abcdef01","account_value":1000.0,"total_pnl":0.0,"follows":[]}}
+    {"type":"fill","fill":{"time":1760257800000,"coin":"BTC","side":"buy","px":100000.5,"sz":0.01,"closed_pnl":0.0,"fee":0.45,"dir":"Open Long"}}
+    {"type":"error","error":"session expired"}
+    (exn ("Of_yojson_error (Failure(\"Ws_push: unknown type\"), \"pong\")"))
+    |}]
+;;
