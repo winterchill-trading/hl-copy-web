@@ -3,14 +3,24 @@
 // in api/api_types.mli (methods, paths, bearer token, JSON bodies).
 //
 //   node live.js <path to main.bc.js> <directory holding dev/>
+//
+// With a third argument, the same app runs against a real hl-copy-api at that URL (on
+// hl-sim or testnet), with a wallet that really signs: DEV_WALLET names hl-copy-api's
+// tools/dev_wallet.exe and HL_COPY_WALLET_KEY a throwaway key (never printed). That run
+// logs in, approves an agent and the builder fee, follows the first leader, pauses and
+// stops, and reports every non-2xx reply as a contract mismatch. hl-copy-api's
+// scripts/e2e-stack.sh runs it.
+//
+//   node live.js <main.bc.js> <directory holding dev/> http://localhost:8080
 "use strict";
 const fs = require("fs");
 const path = require("path");
+const { execFileSync } = require("child_process");
 const { install, makeEvent } = require("./fake_dom.js");
 
-const [, , appJs, root] = process.argv;
+const [, , appJs, root, liveApi] = process.argv;
 const fixture = (name) => JSON.parse(fs.readFileSync(path.join(root, "dev", name), "utf8"));
-const API = "http://api.test";
+const API = liveApi ? liveApi.replace(/\/$/, "") : "http://api.test";
 const TOKEN = "t-1";
 
 const requests = [];
@@ -62,7 +72,19 @@ function api(method, url, headers, body) {
   return json(404, { error: `no route ${method} ${p}` });
 }
 
-const env = install({ root, hash: "", search: "?api=" + encodeURIComponent(API), handler: api });
+// The real server: every request goes over HTTP; replies are recorded like the fake's.
+async function real(method, url, headers, body) {
+  if (!url.startsWith(API)) return null;
+  const p = url.slice(API.length);
+  const record = { method, path: p, auth: headers.Authorization, body: body ? JSON.parse(body) : undefined };
+  requests.push(record);
+  const r = await fetch(url, { method, headers, body: body || undefined });
+  record.status = r.status;
+  record.reply = await r.text();
+  return { status: r.status, body: record.reply };
+}
+
+const env = install({ root, hash: "", search: "?api=" + encodeURIComponent(API), handler: liveApi ? real : api });
 const { document } = env;
 const print = (s) => process.stdout.write(s + "\n");
 console.log = () => {};
@@ -70,7 +92,26 @@ const consoleErrors = [];
 const origError = console.error;
 console.error = (...a) => { consoleErrors.push(a.map(String).join(" ")); origError(...a); };
 
-window.ethereum = {
+// Signs with hl-copy-api's dev_wallet (the key stays in the environment).
+const devWallet = (args, input) =>
+  execFileSync(process.env.DEV_WALLET, args, { input, encoding: "utf8" }).trim();
+const realWallet = {
+  calls: [],
+  request({ method, params }) {
+    this.calls.push(method);
+    try {
+      switch (method) {
+        case "eth_requestAccounts": return Promise.resolve([devWallet(["address"])]);
+        case "eth_chainId": return Promise.resolve("0x66eee");
+        case "personal_sign": return Promise.resolve(devWallet(["personal-sign"], Buffer.from(params[0].slice(2), "hex")));
+        case "eth_signTypedData_v4": return Promise.resolve(devWallet(["sign-typed-data"], params[1]));
+        default: return Promise.reject(new Error("wallet: unsupported " + method));
+      }
+    } catch (e) { return Promise.reject(e); }
+  },
+};
+
+window.ethereum = liveApi ? realWallet : {
   calls: [],
   request({ method, params }) {
     this.calls.push(method);
@@ -170,6 +211,57 @@ async function main() {
   process.exit(0);
 }
 
+// Against the real API: a fresh wallet, so no agent and no follows to begin with.
+async function mainReal() {
+  if (!process.env.DEV_WALLET || !process.env.HL_COPY_WALLET_KEY) fail("set DEV_WALLET and HL_COPY_WALLET_KEY");
+  const wallet = devWallet(["address"]);
+  const leaders = (await (await fetch(API + "/leaders")).json()).leaders;
+  if (!leaders.length) fail("the API lists no leaders");
+  require(path.resolve(appJs));
+  const table = () => document.querySelector("#leaders-table");
+  await waitFor("leaders table", () => table() && table().querySelectorAll("tr").length === leaders.length + 1, 10000);
+  expectRequest("GET", "/leaders", (r) => r.status === 200);
+  step(`GET /leaders renders all ${leaders.length} leaders of the real API`);
+
+  window.location.hash = "#/login";
+  await waitFor("login page", () => byText("button", "Connect wallet"));
+  click(byText("button", "Connect wallet"), "connect");
+  await waitFor("dashboard", () => location.hash === "#/dashboard" && bodyText().includes("You have no trading agent yet"), 10000);
+  expectRequest("POST", "/auth/verify", (r) => r.status === 200 && r.body.address === wallet);
+  expectRequest("GET", "/me", (r) => r.status === 200 && r.auth && r.auth.startsWith("Bearer "));
+  step("wallet login: the real server accepts the personal_sign of its challenge");
+
+  const leader = leaders[0].address;
+  window.location.hash = "#/follow/" + leader;
+  await waitFor("review button", () => byText("button", "Review agent approval") && !byText("button", "Review agent approval").disabled, 10000);
+  click(byText("button", "Review agent approval"), "review");
+  await waitFor("sign button", () => byText("button", "Sign and follow"));
+  click(byText("button", "Sign and follow"), "sign");
+  const followed = () => requests.find((r) => r.method === "POST" && r.path === "/follows" && r.status);
+  await waitFor("POST /follows answered", followed, 15000);
+  if (followed().status >= 300) fail("POST /follows: " + followed().status + " " + followed().reply);
+  const id = JSON.parse(followed().reply).id;
+  const card = () => document.querySelector("#follow-" + id);
+  await waitFor("follow card", () => location.hash === "#/dashboard" && card(), 10000);
+  for (const [m, p] of [["POST", "/agent/new"], ["POST", "/agent/approved"], ["POST", "/builder-fee"]])
+    expectRequest(m, p, (r) => r.status === 200);
+  step(`follow: agent and builder fee approved on the exchange, follow ${id} created`);
+
+  click(card().querySelectorAll("button").find((b) => text(b) === "Pause"), "pause");
+  await waitFor("paused", () => card() && text(card().querySelector("span.badge")) === "paused", 10000);
+  expectRequest("PATCH", "/follows/" + id, (r) => r.status === 200);
+  click(card().querySelectorAll("button").find((b) => text(b) === "Stop"), "stop");
+  await waitFor("stopped", () => card() && text(card().querySelector("span.badge")) === "stopped", 10000);
+  expectRequest("DELETE", "/follows/" + id, (r) => r.status === 200);
+  step("pause and stop through the real API");
+
+  const mismatches = requests.filter((r) => r.status >= 300);
+  if (mismatches.length) fail("non-2xx replies: " + JSON.stringify(mismatches.map((r) => `${r.method} ${r.path} ${r.status} ${r.reply}`)));
+  if (consoleErrors.length) fail("console errors: " + consoleErrors.join(" | "));
+  print(`all ${n} steps passed against ${API}; ${requests.length} API requests`);
+  process.exit(0);
+}
+
 process.on("uncaughtException", (e) => fail("uncaught " + (e && e.stack ? e.stack : e)));
 setTimeout(() => fail("took longer than 60 s"), 60_000).unref();
-main();
+if (liveApi) mainReal(); else main();
