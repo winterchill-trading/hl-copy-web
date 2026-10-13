@@ -1,0 +1,18 @@
+; Byte only, like ethereum: the app is compiled to JavaScript and never linked natively.
+
+(library
+ (name copy_web_ui)
+ (modes byte)
+ (libraries
+  core
+  async_kernel
+  async_js
+  bonsai_web
+  virtual_dom.svg
+  js_of_ocaml
+  yojson
+  hl-copy-api-types
+  copy_web_model
+  ethereum)
+ (preprocess
+  (pps ppx_jane js_of_ocaml-ppx)))
