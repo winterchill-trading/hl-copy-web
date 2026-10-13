@@ -6,7 +6,6 @@
  (libraries
   core
   async_kernel
-  async_js
   bonsai_web
   virtual_dom.svg
   js_of_ocaml
