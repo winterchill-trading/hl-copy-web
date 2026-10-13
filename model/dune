@@ -1,0 +1,5 @@
+(library
+ (name copy_web_model)
+ (libraries core hl-copy-api-types)
+ (preprocess
+  (pps ppx_jane)))

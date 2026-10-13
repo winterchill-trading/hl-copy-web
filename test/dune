@@ -3,6 +3,6 @@
  (inline_tests
   (flags
    (:standard -source-tree-root .)))
- (libraries core yojson hl-copy-api-types)
+ (libraries core yojson hl-copy-api-types copy_web_model)
  (preprocess
   (pps ppx_jane)))
