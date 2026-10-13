@@ -2,3 +2,4 @@
     geometry and form validation. Nothing here touches the DOM, so it is tested natively. *)
 
 module Route = Route
+module Format = Format
