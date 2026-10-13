@@ -1,0 +1,16 @@
+{
+  "approve_agent": {
+    "hyperliquid_chain": "Testnet",
+    "signature_chain_id": "0x66eee",
+    "agent_address": "0xe139fba95d43a8acd9d4f58e7bcedc60e7dab4ee",
+    "agent_name": "hl-copy",
+    "nonce": 1760257800000
+  },
+  "approve_builder_fee": {
+    "hyperliquid_chain": "Testnet",
+    "signature_chain_id": "0x66eee",
+    "max_fee_rate": "0.01%",
+    "builder": "0x53aa631b2d8d1fb87aa4dcff435c2dc6e62dbe27",
+    "nonce": 1760257800001
+  }
+}

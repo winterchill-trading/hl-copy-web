@@ -1,0 +1,809 @@
+{
+  "leader": {
+    "address": "0x620a6cb530c365973f6efaebe2c35488da2b97ac",
+    "display_name": "meanrev",
+    "rank": 1,
+    "score": 69.2,
+    "breakdown": {
+      "pnl": 235975.4,
+      "roi": 0.5221,
+      "max_drawdown": 0.138,
+      "win_rate": 0.6756,
+      "trade_count": 684,
+      "avg_hold_secs": 168123,
+      "consistency": 0.8927
+    },
+    "account_value": 687924.14,
+    "window_pnl": {
+      "day": -34618.15,
+      "week": -339.39,
+      "month": 52909.85,
+      "all_time": 235975.4
+    },
+    "followers": 35
+  },
+  "equity_curve": [
+    {
+      "time": 1752481800000,
+      "equity": 451948.74
+    },
+    {
+      "time": 1752568200000,
+      "equity": 443569.3
+    },
+    {
+      "time": 1752654600000,
+      "equity": 429743.25
+    },
+    {
+      "time": 1752741000000,
+      "equity": 417756.25
+    },
+    {
+      "time": 1752827400000,
+      "equity": 426173.06
+    },
+    {
+      "time": 1752913800000,
+      "equity": 431400.06
+    },
+    {
+      "time": 1753000200000,
+      "equity": 432316.53
+    },
+    {
+      "time": 1753086600000,
+      "equity": 458078.89
+    },
+    {
+      "time": 1753173000000,
+      "equity": 453128.68
+    },
+    {
+      "time": 1753259400000,
+      "equity": 473392.33
+    },
+    {
+      "time": 1753345800000,
+      "equity": 480600.37
+    },
+    {
+      "time": 1753432200000,
+      "equity": 482711.73
+    },
+    {
+      "time": 1753518600000,
+      "equity": 481588.05
+    },
+    {
+      "time": 1753605000000,
+      "equity": 507503.54
+    },
+    {
+      "time": 1753691400000,
+      "equity": 500381.68
+    },
+    {
+      "time": 1753777800000,
+      "equity": 479400.02
+    },
+    {
+      "time": 1753864200000,
+      "equity": 476229.82
+    },
+    {
+      "time": 1753950600000,
+      "equity": 496638.77
+    },
+    {
+      "time": 1754037000000,
+      "equity": 480701.75
+    },
+    {
+      "time": 1754123400000,
+      "equity": 486318.11
+    },
+    {
+      "time": 1754209800000,
+      "equity": 513743.53
+    },
+    {
+      "time": 1754296200000,
+      "equity": 540530.97
+    },
+    {
+      "time": 1754382600000,
+      "equity": 558153.28
+    },
+    {
+      "time": 1754469000000,
+      "equity": 610800.58
+    },
+    {
+      "time": 1754555400000,
+      "equity": 616434.84
+    },
+    {
+      "time": 1754641800000,
+      "equity": 617082.94
+    },
+    {
+      "time": 1754728200000,
+      "equity": 583691.59
+    },
+    {
+      "time": 1754814600000,
+      "equity": 594918.69
+    },
+    {
+      "time": 1754901000000,
+      "equity": 618462.76
+    },
+    {
+      "time": 1754987400000,
+      "equity": 616173.26
+    },
+    {
+      "time": 1755073800000,
+      "equity": 616678.67
+    },
+    {
+      "time": 1755160200000,
+      "equity": 632902.84
+    },
+    {
+      "time": 1755246600000,
+      "equity": 648836.03
+    },
+    {
+      "time": 1755333000000,
+      "equity": 646153.13
+    },
+    {
+      "time": 1755419400000,
+      "equity": 638163.73
+    },
+    {
+      "time": 1755505800000,
+      "equity": 634682.28
+    },
+    {
+      "time": 1755592200000,
+      "equity": 587555.18
+    },
+    {
+      "time": 1755678600000,
+      "equity": 582398.47
+    },
+    {
+      "time": 1755765000000,
+      "equity": 608958.66
+    },
+    {
+      "time": 1755851400000,
+      "equity": 639365.8
+    },
+    {
+      "time": 1755937800000,
+      "equity": 598926.41
+    },
+    {
+      "time": 1756024200000,
+      "equity": 598737.97
+    },
+    {
+      "time": 1756110600000,
+      "equity": 596674.98
+    },
+    {
+      "time": 1756197000000,
+      "equity": 585178.24
+    },
+    {
+      "time": 1756283400000,
+      "equity": 605392.13
+    },
+    {
+      "time": 1756369800000,
+      "equity": 593783.48
+    },
+    {
+      "time": 1756456200000,
+      "equity": 597497.45
+    },
+    {
+      "time": 1756542600000,
+      "equity": 599835.04
+    },
+    {
+      "time": 1756629000000,
+      "equity": 580585.61
+    },
+    {
+      "time": 1756715400000,
+      "equity": 583702.47
+    },
+    {
+      "time": 1756801800000,
+      "equity": 582326.86
+    },
+    {
+      "time": 1756888200000,
+      "equity": 594499.77
+    },
+    {
+      "time": 1756974600000,
+      "equity": 587086.83
+    },
+    {
+      "time": 1757061000000,
+      "equity": 603378.87
+    },
+    {
+      "time": 1757147400000,
+      "equity": 606110.02
+    },
+    {
+      "time": 1757233800000,
+      "equity": 607217.55
+    },
+    {
+      "time": 1757320200000,
+      "equity": 609505.34
+    },
+    {
+      "time": 1757406600000,
+      "equity": 574223.64
+    },
+    {
+      "time": 1757493000000,
+      "equity": 608770.99
+    },
+    {
+      "time": 1757579400000,
+      "equity": 643256.47
+    },
+    {
+      "time": 1757665800000,
+      "equity": 635014.29
+    },
+    {
+      "time": 1757752200000,
+      "equity": 594635.08
+    },
+    {
+      "time": 1757838600000,
+      "equity": 592012.95
+    },
+    {
+      "time": 1757925000000,
+      "equity": 612689.31
+    },
+    {
+      "time": 1758011400000,
+      "equity": 559308.41
+    },
+    {
+      "time": 1758097800000,
+      "equity": 605219.77
+    },
+    {
+      "time": 1758184200000,
+      "equity": 591470.23
+    },
+    {
+      "time": 1758270600000,
+      "equity": 583758.07
+    },
+    {
+      "time": 1758357000000,
+      "equity": 571997.66
+    },
+    {
+      "time": 1758443400000,
+      "equity": 580663.84
+    },
+    {
+      "time": 1758529800000,
+      "equity": 591246.24
+    },
+    {
+      "time": 1758616200000,
+      "equity": 596016.37
+    },
+    {
+      "time": 1758702600000,
+      "equity": 606358.67
+    },
+    {
+      "time": 1758789000000,
+      "equity": 594434.25
+    },
+    {
+      "time": 1758875400000,
+      "equity": 610366.37
+    },
+    {
+      "time": 1758961800000,
+      "equity": 606488.47
+    },
+    {
+      "time": 1759048200000,
+      "equity": 606230.3
+    },
+    {
+      "time": 1759134600000,
+      "equity": 632714.19
+    },
+    {
+      "time": 1759221000000,
+      "equity": 642434.41
+    },
+    {
+      "time": 1759307400000,
+      "equity": 664075.44
+    },
+    {
+      "time": 1759393800000,
+      "equity": 711826.09
+    },
+    {
+      "time": 1759480200000,
+      "equity": 701106.84
+    },
+    {
+      "time": 1759566600000,
+      "equity": 716099.39
+    },
+    {
+      "time": 1759653000000,
+      "equity": 688263.53
+    },
+    {
+      "time": 1759739400000,
+      "equity": 738616.95
+    },
+    {
+      "time": 1759825800000,
+      "equity": 711688.95
+    },
+    {
+      "time": 1759912200000,
+      "equity": 679237.48
+    },
+    {
+      "time": 1759998600000,
+      "equity": 670764.04
+    },
+    {
+      "time": 1760085000000,
+      "equity": 708331.82
+    },
+    {
+      "time": 1760171400000,
+      "equity": 722542.29
+    },
+    {
+      "time": 1760257800000,
+      "equity": 687924.14
+    }
+  ],
+  "fills": [
+    {
+      "time": 1760257800000,
+      "coin": "HYPE",
+      "side": "sell",
+      "px": 44.7,
+      "sz": 19.5129,
+      "closed_pnl": -38.59,
+      "fee": 0.23,
+      "dir": "Close Long"
+    },
+    {
+      "time": 1760254917239,
+      "coin": "ETH",
+      "side": "sell",
+      "px": 4001.35,
+      "sz": 1.5521,
+      "closed_pnl": 0.0,
+      "fee": 2.02,
+      "dir": "Open Short"
+    },
+    {
+      "time": 1760224785136,
+      "coin": "ETH",
+      "side": "sell",
+      "px": 4193.44,
+      "sz": 1.4417,
+      "closed_pnl": -117.22,
+      "fee": 1.43,
+      "dir": "Close Long"
+    },
+    {
+      "time": 1760204277677,
+      "coin": "SOL",
+      "side": "buy",
+      "px": 192.18,
+      "sz": 12.3859,
+      "closed_pnl": 0.0,
+      "fee": 1.09,
+      "dir": "Open Long"
+    },
+    {
+      "time": 1760172561118,
+      "coin": "SOL",
+      "side": "buy",
+      "px": 190.14,
+      "sz": 42.1194,
+      "closed_pnl": -0.87,
+      "fee": 2.82,
+      "dir": "Close Short"
+    },
+    {
+      "time": 1760155719789,
+      "coin": "HYPE",
+      "side": "sell",
+      "px": 45.35,
+      "sz": 217.5661,
+      "closed_pnl": 0.0,
+      "fee": 0.78,
+      "dir": "Open Short"
+    },
+    {
+      "time": 1760126705077,
+      "coin": "HYPE",
+      "side": "buy",
+      "px": 44.14,
+      "sz": 101.8732,
+      "closed_pnl": 180.94,
+      "fee": 2.98,
+      "dir": "Close Short"
+    },
+    {
+      "time": 1760105820365,
+      "coin": "BTC",
+      "side": "buy",
+      "px": 113288.49,
+      "sz": 0.0842,
+      "closed_pnl": 0.0,
+      "fee": 1.06,
+      "dir": "Open Long"
+    },
+    {
+      "time": 1760083219057,
+      "coin": "BTC",
+      "side": "sell",
+      "px": 114802.46,
+      "sz": 0.0886,
+      "closed_pnl": -163.62,
+      "fee": 0.75,
+      "dir": "Close Long"
+    },
+    {
+      "time": 1760066726811,
+      "coin": "SOL",
+      "side": "buy",
+      "px": 194.23,
+      "sz": 36.3682,
+      "closed_pnl": 0.0,
+      "fee": 1.35,
+      "dir": "Open Long"
+    },
+    {
+      "time": 1760062157649,
+      "coin": "ETH",
+      "side": "buy",
+      "px": 4104.53,
+      "sz": 0.1795,
+      "closed_pnl": -82.51,
+      "fee": 0.41,
+      "dir": "Close Short"
+    },
+    {
+      "time": 1760031410196,
+      "coin": "HYPE",
+      "side": "sell",
+      "px": 45.87,
+      "sz": 212.6888,
+      "closed_pnl": 0.0,
+      "fee": 0.37,
+      "dir": "Open Short"
+    },
+    {
+      "time": 1760030294474,
+      "coin": "SOL",
+      "side": "buy",
+      "px": 185.94,
+      "sz": 24.226,
+      "closed_pnl": 101.11,
+      "fee": 0.48,
+      "dir": "Close Short"
+    },
+    {
+      "time": 1760000940345,
+      "coin": "BTC",
+      "side": "sell",
+      "px": 110984.56,
+      "sz": 0.0688,
+      "closed_pnl": 0.0,
+      "fee": 0.25,
+      "dir": "Open Short"
+    },
+    {
+      "time": 1759993249227,
+      "coin": "HYPE",
+      "side": "buy",
+      "px": 45.22,
+      "sz": 121.6154,
+      "closed_pnl": 150.19,
+      "fee": 1.94,
+      "dir": "Close Short"
+    },
+    {
+      "time": 1759984630471,
+      "coin": "BTC",
+      "side": "buy",
+      "px": 109711.18,
+      "sz": 0.0369,
+      "closed_pnl": 0.0,
+      "fee": 2.72,
+      "dir": "Open Long"
+    },
+    {
+      "time": 1759958062798,
+      "coin": "SOL",
+      "side": "sell",
+      "px": 189.07,
+      "sz": 61.0164,
+      "closed_pnl": -351.11,
+      "fee": 0.88,
+      "dir": "Close Long"
+    },
+    {
+      "time": 1759944994081,
+      "coin": "ETH",
+      "side": "sell",
+      "px": 4078.72,
+      "sz": 2.5875,
+      "closed_pnl": 0.0,
+      "fee": 1.56,
+      "dir": "Open Short"
+    },
+    {
+      "time": 1759919159557,
+      "coin": "ETH",
+      "side": "buy",
+      "px": 3998.52,
+      "sz": 1.1398,
+      "closed_pnl": 50.93,
+      "fee": 0.72,
+      "dir": "Close Short"
+    },
+    {
+      "time": 1759887660934,
+      "coin": "SOL",
+      "side": "sell",
+      "px": 188.81,
+      "sz": 9.1766,
+      "closed_pnl": 0.0,
+      "fee": 1.69,
+      "dir": "Open Short"
+    },
+    {
+      "time": 1759874725209,
+      "coin": "HYPE",
+      "side": "buy",
+      "px": 45.41,
+      "sz": 116.6834,
+      "closed_pnl": 213.65,
+      "fee": 1.28,
+      "dir": "Close Short"
+    },
+    {
+      "time": 1759859210211,
+      "coin": "SOL",
+      "side": "buy",
+      "px": 187.0,
+      "sz": 19.4538,
+      "closed_pnl": 0.0,
+      "fee": 0.27,
+      "dir": "Open Long"
+    },
+    {
+      "time": 1759832991897,
+      "coin": "ETH",
+      "side": "buy",
+      "px": 4150.64,
+      "sz": 0.645,
+      "closed_pnl": -65.67,
+      "fee": 1.73,
+      "dir": "Close Short"
+    },
+    {
+      "time": 1759807325111,
+      "coin": "HYPE",
+      "side": "buy",
+      "px": 44.91,
+      "sz": 50.0317,
+      "closed_pnl": 0.0,
+      "fee": 1.19,
+      "dir": "Open Long"
+    },
+    {
+      "time": 1759783717379,
+      "coin": "HYPE",
+      "side": "buy",
+      "px": 45.35,
+      "sz": 84.8557,
+      "closed_pnl": -66.98,
+      "fee": 2.6,
+      "dir": "Close Short"
+    },
+    {
+      "time": 1759761603797,
+      "coin": "SOL",
+      "side": "sell",
+      "px": 191.09,
+      "sz": 37.7602,
+      "closed_pnl": 0.0,
+      "fee": 1.23,
+      "dir": "Open Short"
+    },
+    {
+      "time": 1759753082577,
+      "coin": "ETH",
+      "side": "buy",
+      "px": 4007.88,
+      "sz": 2.0617,
+      "closed_pnl": 56.29,
+      "fee": 0.46,
+      "dir": "Close Short"
+    },
+    {
+      "time": 1759725375730,
+      "coin": "HYPE",
+      "side": "buy",
+      "px": 43.73,
+      "sz": 91.5934,
+      "closed_pnl": 0.0,
+      "fee": 1.29,
+      "dir": "Open Long"
+    },
+    {
+      "time": 1759721930080,
+      "coin": "ETH",
+      "side": "buy",
+      "px": 4167.93,
+      "sz": 0.9895,
+      "closed_pnl": -0.05,
+      "fee": 1.77,
+      "dir": "Close Short"
+    },
+    {
+      "time": 1759709758323,
+      "coin": "SOL",
+      "side": "sell",
+      "px": 186.5,
+      "sz": 7.6146,
+      "closed_pnl": 0.0,
+      "fee": 1.01,
+      "dir": "Open Short"
+    },
+    {
+      "time": 1759683161123,
+      "coin": "HYPE",
+      "side": "sell",
+      "px": 44.41,
+      "sz": 229.5444,
+      "closed_pnl": -25.59,
+      "fee": 1.5,
+      "dir": "Close Long"
+    },
+    {
+      "time": 1759662544974,
+      "coin": "ETH",
+      "side": "buy",
+      "px": 4207.44,
+      "sz": 0.1766,
+      "closed_pnl": 0.0,
+      "fee": 2.1,
+      "dir": "Open Long"
+    },
+    {
+      "time": 1759640801793,
+      "coin": "SOL",
+      "side": "buy",
+      "px": 194.53,
+      "sz": 41.3578,
+      "closed_pnl": 2.09,
+      "fee": 2.57,
+      "dir": "Close Short"
+    },
+    {
+      "time": 1759628926837,
+      "coin": "BTC",
+      "side": "buy",
+      "px": 109860.73,
+      "sz": 0.0322,
+      "closed_pnl": 0.0,
+      "fee": 1.9,
+      "dir": "Open Long"
+    },
+    {
+      "time": 1759621262839,
+      "coin": "BTC",
+      "side": "buy",
+      "px": 111359.33,
+      "sz": 0.0485,
+      "closed_pnl": -74.82,
+      "fee": 2.32,
+      "dir": "Close Short"
+    },
+    {
+      "time": 1759615594767,
+      "coin": "BTC",
+      "side": "buy",
+      "px": 112351.75,
+      "sz": 0.0618,
+      "closed_pnl": 0.0,
+      "fee": 0.84,
+      "dir": "Open Long"
+    },
+    {
+      "time": 1759599101556,
+      "coin": "SOL",
+      "side": "sell",
+      "px": 194.85,
+      "sz": 57.7555,
+      "closed_pnl": 247.36,
+      "fee": 2.04,
+      "dir": "Close Long"
+    },
+    {
+      "time": 1759569835634,
+      "coin": "BTC",
+      "side": "buy",
+      "px": 115186.14,
+      "sz": 0.0072,
+      "closed_pnl": 0.0,
+      "fee": 1.09,
+      "dir": "Open Long"
+    },
+    {
+      "time": 1759544496454,
+      "coin": "SOL",
+      "side": "buy",
+      "px": 192.84,
+      "sz": 27.1718,
+      "closed_pnl": 215.69,
+      "fee": 2.28,
+      "dir": "Close Short"
+    },
+    {
+      "time": 1759512156343,
+      "coin": "ETH",
+      "side": "buy",
+      "px": 4046.17,
+      "sz": 1.0995,
+      "closed_pnl": 0.0,
+      "fee": 2.86,
+      "dir": "Open Long"
+    }
+  ],
+  "positions": [
+    {
+      "coin": "HYPE",
+      "size": 3887.545,
+      "entry_px": 44.68,
+      "unrealized_pnl": -8006.42,
+      "leverage": 1.5
+    },
+    {
+      "coin": "SOL",
+      "size": 3482.7873,
+      "entry_px": 198.59,
+      "unrealized_pnl": -2265.03,
+      "leverage": 4.3
+    }
+  ]
+}

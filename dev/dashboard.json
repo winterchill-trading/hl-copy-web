@@ -1,0 +1,70 @@
+{
+  "address": "0xf97609fe4df7ede5bcb92492bbe8e795881d3f9b",
+  "account_value": 12480.55,
+  "total_pnl": 128.52,
+  "follows": [
+    {
+      "id": "f-1",
+      "leader": "0x620a6cb530c365973f6efaebe2c35488da2b97ac",
+      "scale": {
+        "kind": "equity_ratio"
+      },
+      "caps": {
+        "max_leverage": 3.0,
+        "max_notional_per_symbol": 5000.0,
+        "max_daily_loss": 500.0,
+        "allowlist": [],
+        "min_order_notional": 10.0
+      },
+      "state": "running",
+      "created_at": 1759221000000,
+      "pnl": 140.1,
+      "positions": [
+        {
+          "coin": "BTC",
+          "size": 0.0239,
+          "entry_px": 112838.33,
+          "unrealized_pnl": -27.55,
+          "leverage": 1.2
+        },
+        {
+          "coin": "HYPE",
+          "size": 194.4902,
+          "entry_px": 46.7,
+          "unrealized_pnl": -267.95,
+          "leverage": 1.5
+        }
+      ]
+    },
+    {
+      "id": "f-2",
+      "leader": "0x288a5b7ecfa6f9246c15e4eb5730e4acab10be1b",
+      "scale": {
+        "kind": "multiplier",
+        "value": 0.25
+      },
+      "caps": {
+        "max_leverage": 3.0,
+        "max_notional_per_symbol": 5000.0,
+        "max_daily_loss": 500.0,
+        "allowlist": [
+          "BTC",
+          "ETH"
+        ],
+        "min_order_notional": 10.0
+      },
+      "state": "paused",
+      "created_at": 1759653000000,
+      "pnl": -11.58,
+      "positions": [
+        {
+          "coin": "HYPE",
+          "size": 36.0125,
+          "entry_px": 45.83,
+          "unrealized_pnl": 1.39,
+          "leverage": 1.6
+        }
+      ]
+    }
+  ]
+}
