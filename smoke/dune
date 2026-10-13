@@ -1,0 +1,12 @@
+; Runs the compiled app under node with a fake DOM and a fake wallet (needs node on
+; PATH). See run.js for the steps.
+
+(rule
+ (alias runtest)
+ (deps
+  ../bin/main.bc.js
+  fake_dom.js
+  run.js
+  (source_tree ../dev))
+ (action
+  (run node run.js ../bin/main.bc.js ..)))
