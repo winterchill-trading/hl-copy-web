@@ -37,6 +37,7 @@
    (= :version))
   bonsai_web
   virtual_dom
+  async_kernel
   js_of_ocaml
   js_of_ocaml-ppx
   gen_js_api
