@@ -238,7 +238,7 @@ module Auth = struct
     [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
   end
 
-  module Login_request = struct
+  module Verify_request = struct
     type t =
       { address : Address.t
       ; nonce : string
@@ -374,17 +374,38 @@ module Agent_offer = struct
   [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
 end
 
+module Agent_approval = struct
+  type t =
+    { approve_agent : Approve_agent.t
+    ; signature : string
+    }
+  [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
+end
+
+module Builder_fee_approval = struct
+  type t =
+    { approve_builder_fee : Approve_builder_fee.t
+    ; signature : string
+    }
+  [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
+end
+
+module Agent_status = struct
+  type t =
+    { agent_address : Address.t
+    ; agent_name : string
+    ; approved : bool
+    ; valid_until : Time_ms.t option [@default None] [@yojson_drop_if Option.is_none]
+    ; builder_fee : string option [@default None] [@yojson_drop_if Option.is_none]
+    }
+  [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
+end
+
 module Follow_request = struct
   type t =
     { leader : Address.t
     ; scale : Scale_mode.t
     ; caps : Caps.t
-    ; approve_agent : Approve_agent.t
-    ; agent_signature : string
-    ; approve_builder_fee : Approve_builder_fee.t option
-         [@default None] [@yojson_drop_if Option.is_none]
-    ; builder_fee_signature : string option
-         [@default None] [@yojson_drop_if Option.is_none]
     }
   [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
 end
@@ -428,30 +449,20 @@ module Follow = struct
   [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
 end
 
-module Dashboard = struct
+module Follow_update = struct
+  type t = { state : Follow_state.t }
+  [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
+end
+
+module Me = struct
   type t =
     { address : Address.t
     ; account_value : float
     ; total_pnl : float
+    ; agent : Agent_status.t option [@default None] [@yojson_drop_if Option.is_none]
     ; follows : Follow.t list
     }
   [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
-end
-
-module Follow_command = struct
-  type t =
-    | Pause
-    | Resume
-    | Stop
-  [@@deriving compare, enumerate, equal, sexp]
-
-  let to_string = function
-    | Pause -> "pause"
-    | Resume -> "resume"
-    | Stop -> "stop"
-  ;;
-
-  let of_string s = List.find all ~f:(fun t -> String.equal (to_string t) s)
 end
 
 module Api_error = struct
@@ -463,11 +474,11 @@ module Endpoint = struct
   let leaders = "/leaders"
   let leader address = "/leaders/" ^ Address.to_string address
   let auth_challenge = "/auth/challenge"
-  let auth_login = "/auth/login"
-  let agent = "/agent"
+  let auth_verify = "/auth/verify"
+  let agent_new = "/agent/new"
+  let agent_approved = "/agent/approved"
+  let builder_fee = "/builder-fee"
   let follows = "/follows"
-
-  let follow_command ~id command =
-    sprintf "/follows/%s/%s" id (Follow_command.to_string command)
-  ;;
+  let follow ~id = "/follows/" ^ id
+  let me = "/me"
 end

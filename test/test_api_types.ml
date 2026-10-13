@@ -166,24 +166,38 @@ let%expect_test "approveBuilderFee typed data message" =
     |}]
 ;;
 
-let%expect_test "follow states, commands and endpoints" =
+let%expect_test "follow states, updates and endpoints" =
   List.iter Follow_state.all ~f:(fun s -> round_trip (module Follow_state) s);
-  List.iter Follow_command.all ~f:(fun c ->
-    print_endline (Endpoint.follow_command ~id:"f-1" c);
-    assert (
-      Option.equal
-        Follow_command.equal
-        (Follow_command.of_string (Follow_command.to_string c))
-        (Some c)));
-  print_endline (Endpoint.leader address);
+  round_trip (module Follow_update) { state = Paused };
+  List.iter
+    Endpoint.
+      [ leaders
+      ; leader address
+      ; auth_challenge
+      ; auth_verify
+      ; agent_new
+      ; agent_approved
+      ; builder_fee
+      ; follows
+      ; follow ~id:"f-1"
+      ; me
+      ]
+    ~f:print_endline;
   [%expect
     {|
     "running"
     "paused"
     "stopped"
-    /follows/f-1/pause
-    /follows/f-1/resume
-    /follows/f-1/stop
+    {"state":"paused"}
+    /leaders
     /leaders/0xabcdef0123456789abcdef0123456789abcdef01
+    /auth/challenge
+    /auth/verify
+    /agent/new
+    /agent/approved
+    /builder-fee
+    /follows
+    /follows/f-1
+    /me
     |}]
 ;;

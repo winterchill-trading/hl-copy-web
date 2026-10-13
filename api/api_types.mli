@@ -180,17 +180,17 @@ module Auth : sig
     [@@deriving compare, equal, sexp, yojson]
   end
 
-  (** [POST /auth/login] *)
-  module Login_request : sig
+  (** [POST /auth/verify] *)
+  module Verify_request : sig
     type t =
       { address : Address.t
-      ; nonce : string
+      ; nonce : string (** from the {!Challenge} that was signed *)
       ; signature : string (** [0x]-prefixed 65-byte hex *)
       }
     [@@deriving compare, equal, sexp, yojson]
   end
 
-  (** Sent back as [Authorization: Bearer <token>]. *)
+  (** The reply to [POST /auth/verify]; send [token] as [Authorization: Bearer <token>]. *)
   module Session : sig
     type t =
       { token : string
@@ -245,7 +245,8 @@ module Approve_builder_fee : sig
   val typed_data : t -> Yojson.Safe.t
 end
 
-(** [POST /agent], authenticated: the actions the wallet should sign before following. *)
+(** The reply to [POST /agent/new] (authenticated, empty body): a freshly generated agent
+    for this user and, when the platform charges one, the builder fee to approve. *)
 module Agent_offer : sig
   type t =
     { approve_agent : Approve_agent.t
@@ -254,16 +255,45 @@ module Agent_offer : sig
   [@@deriving compare, equal, sexp, yojson]
 end
 
-(** [POST /follows], authenticated. *)
+(** [POST /agent/approved]: the action exactly as signed (including a chain id the browser
+    replaced) and the wallet's signature. The server submits it to Hyperliquid. *)
+module Agent_approval : sig
+  type t =
+    { approve_agent : Approve_agent.t
+    ; signature : string
+    }
+  [@@deriving compare, equal, sexp, yojson]
+end
+
+(** [POST /builder-fee], like {!Agent_approval}. *)
+module Builder_fee_approval : sig
+  type t =
+    { approve_builder_fee : Approve_builder_fee.t
+    ; signature : string
+    }
+  [@@deriving compare, equal, sexp, yojson]
+end
+
+(** The user's agent as the server knows it; the reply to [POST /agent/approved] and
+    [POST /builder-fee], and part of {!Me}. *)
+module Agent_status : sig
+  type t =
+    { agent_address : Address.t
+    ; agent_name : string
+    ; approved : bool (** Hyperliquid accepted the [approveAgent] *)
+    ; valid_until : Time_ms.t option (** absent when the approval has no expiry *)
+    ; builder_fee : string option (** the approved maximum fee rate, e.g. ["0.01%"] *)
+    }
+  [@@deriving compare, equal, sexp, yojson]
+end
+
+(** [POST /follows], authenticated; the reply is the new {!Follow.t}. Needs an approved
+    agent. *)
 module Follow_request : sig
   type t =
     { leader : Address.t
     ; scale : Scale_mode.t
     ; caps : Caps.t
-    ; approve_agent : Approve_agent.t (** as signed, including any chain id override *)
-    ; agent_signature : string
-    ; approve_builder_fee : Approve_builder_fee.t option
-    ; builder_fee_signature : string option
     }
   [@@deriving compare, equal, sexp, yojson]
 end
@@ -279,6 +309,7 @@ module Follow_state : sig
   val to_string : t -> string
 end
 
+(** [GET /follows/<id>] *)
 module Follow : sig
   type t =
     { id : string
@@ -293,29 +324,22 @@ module Follow : sig
   [@@deriving compare, equal, sexp, yojson]
 end
 
-(** [GET /follows], authenticated. *)
-module Dashboard : sig
+(** [PATCH /follows/<id>]: pause ([Paused]) or resume ([Running]); the reply is the
+    updated {!Follow.t}. [DELETE /follows/<id>] stops a follow for good. *)
+module Follow_update : sig
+  type t = { state : Follow_state.t } [@@deriving compare, equal, sexp, yojson]
+end
+
+(** [GET /me], authenticated: the user's account, agent and follows. *)
+module Me : sig
   type t =
     { address : Address.t
     ; account_value : float
     ; total_pnl : float
+    ; agent : Agent_status.t option (** absent until an agent is generated *)
     ; follows : Follow.t list
     }
   [@@deriving compare, equal, sexp, yojson]
-end
-
-(** [POST /follows/<id>/<command>], authenticated; the reply is the updated {!Follow.t}. *)
-module Follow_command : sig
-  type t =
-    | Pause
-    | Resume
-    | Stop
-  [@@deriving compare, enumerate, equal, sexp]
-
-  (** The path segment: ["pause"], ["resume"], ["stop"]. *)
-  val to_string : t -> string
-
-  val of_string : string -> t option
 end
 
 (** The body of every non-2xx reply. *)
@@ -323,14 +347,36 @@ module Api_error : sig
   type t = { error : string } [@@deriving compare, equal, sexp, yojson]
 end
 
-(** Request paths, relative to the API base URL. Authenticated endpoints take
-    [Authorization: Bearer <Auth.Session.token>]. *)
+(** Request paths, relative to the API base URL. Everything but [leaders], [leader] and
+    the two [auth_] paths needs [Authorization: Bearer <Auth.Session.token>]. *)
 module Endpoint : sig
+  (** GET *)
   val leaders : string
+
+  (** GET *)
   val leader : Address.t -> string
+
+  (** POST *)
   val auth_challenge : string
-  val auth_login : string
-  val agent : string
+
+  (** POST *)
+  val auth_verify : string
+
+  (** POST *)
+  val agent_new : string
+
+  (** POST *)
+  val agent_approved : string
+
+  (** POST *)
+  val builder_fee : string
+
+  (** POST *)
   val follows : string
-  val follow_command : id:string -> Follow_command.t -> string
+
+  (** GET, PATCH, DELETE *)
+  val follow : id:string -> string
+
+  (** GET *)
+  val me : string
 end
