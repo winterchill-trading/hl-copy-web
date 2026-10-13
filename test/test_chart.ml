@@ -27,7 +27,8 @@ let%expect_test "a small curve" =
       [ point 0. 1000.; point day 1300.; point (2. *. day) 900.; point (4. *. day) 1450. ]
   in
   print_s [%sexp (chart : Chart.t option)];
-  [%expect {|
+  [%expect
+    {|
     (((width 400) (height 200) (plot_left 72) (plot_right 388) (plot_top 10)
       (plot_bottom 176) (line ((72 134.5) (151 72.25) (230 155.25) (388 41.125)))
       (y_ticks
@@ -42,13 +43,15 @@ let%expect_test "a small curve" =
 ;;
 
 let%expect_test "degenerate curves" =
-  print_s [%sexp (Chart.equity_curve ~width:100. ~height:50. [ point 0. 5. ] : Chart.t option)];
+  print_s
+    [%sexp (Chart.equity_curve ~width:100. ~height:50. [ point 0. 5. ] : Chart.t option)];
   let flat =
     Chart.equity_curve ~width:100. ~height:50. [ point 0. 500.; point day 500. ]
     |> Option.value_exn
   in
   print_s [%sexp (flat.y_ticks : Chart.Tick.t list), (flat.line : (float * float) list)];
-  [%expect {|
+  [%expect
+    {|
     ()
     ((((at 10) (label $506.00)) ((at 12.666666666666666) (label $504.00))
       ((at 15.333333333333334) (label $502.00)) ((at 18) (label $500.00))
@@ -61,7 +64,9 @@ let%expect_test "degenerate curves" =
 let%expect_test "every fixture curve stays inside the plot" =
   List.iter (Fixtures.leaders ()) ~f:(fun (l : Leader.t) ->
     let d = Fixtures.detail l.address in
-    let c = Chart.equity_curve d.equity_curve ~width:720. ~height:260. |> Option.value_exn in
+    let c =
+      Chart.equity_curve d.equity_curve ~width:720. ~height:260. |> Option.value_exn
+    in
     List.iter c.line ~f:(fun (x, y) ->
       assert (Float.(x >= c.plot_left && x <= c.plot_right));
       assert (Float.(y >= c.plot_top && y <= c.plot_bottom)));
@@ -69,7 +74,8 @@ let%expect_test "every fixture curve stays inside the plot" =
       "%s %s\n"
       (Address.short l.address)
       (List.map c.y_ticks ~f:(fun t -> t.label) |> String.concat ~sep:" "));
-  [%expect {|
+  [%expect
+    {|
     0x620a...97ac $800,000 $700,000 $600,000 $500,000 $400,000
     0x288a...be1b $1,600,000 $1,400,000 $1,200,000 $1,000,000 $800,000 $600,000
     0x6efd...12b9 $700,000 $680,000 $660,000 $640,000 $620,000 $600,000

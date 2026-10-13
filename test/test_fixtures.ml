@@ -7,10 +7,26 @@ let%expect_test "every mock response decodes and round trips" =
     let (x : a) = of_yojson json in
     if not (equal x (of_yojson (yojson_of x))) then print_endline ("changed: " ^ name)
   in
-  check "leaders.json" Leaders_response.t_of_yojson Leaders_response.yojson_of_t Leaders_response.equal;
-  check "auth-challenge.json" Auth.Challenge.t_of_yojson Auth.Challenge.yojson_of_t Auth.Challenge.equal;
-  check "session.json" Auth.Session.t_of_yojson Auth.Session.yojson_of_t Auth.Session.equal;
-  check "agent-offer.json" Agent_offer.t_of_yojson Agent_offer.yojson_of_t Agent_offer.equal;
+  check
+    "leaders.json"
+    Leaders_response.t_of_yojson
+    Leaders_response.yojson_of_t
+    Leaders_response.equal;
+  check
+    "auth-challenge.json"
+    Auth.Challenge.t_of_yojson
+    Auth.Challenge.yojson_of_t
+    Auth.Challenge.equal;
+  check
+    "session.json"
+    Auth.Session.t_of_yojson
+    Auth.Session.yojson_of_t
+    Auth.Session.equal;
+  check
+    "agent-offer.json"
+    Agent_offer.t_of_yojson
+    Agent_offer.yojson_of_t
+    Agent_offer.equal;
   check "dashboard.json" Dashboard.t_of_yojson Dashboard.yojson_of_t Dashboard.equal;
   let leaders = Fixtures.leaders () in
   List.iter leaders ~f:(fun (l : Leader.t) ->
@@ -24,7 +40,8 @@ let%expect_test "every mock response decodes and round trips" =
       (List.length d.equity_curve)
       (List.length d.fills)
       (List.length d.positions));
-  [%expect {|
+  [%expect
+    {|
     1 0x620a...97ac  69.2 curve=91 fills=40 positions=2
     2 0x288a...be1b  60.8 curve=91 fills=40 positions=2
     3 0x6efd...12b9  58.5 curve=91 fills=40 positions=2

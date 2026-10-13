@@ -14,4 +14,8 @@ val apply_command
   -> (Dashboard.t * Follow.t) Or_error.t
 
 (** Appends a running follow with id [f-<n>] and no positions yet. *)
-val add_follow : Dashboard.t -> Follow_request.t -> now:Time_ms.t -> Dashboard.t * Follow.t
+val add_follow
+  :  Dashboard.t
+  -> Follow_request.t
+  -> now:Time_ms.t
+  -> Dashboard.t * Follow.t

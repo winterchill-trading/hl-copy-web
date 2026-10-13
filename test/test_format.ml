@@ -43,8 +43,7 @@ let%expect_test "pct, number, duration" =
 let%expect_test "timestamps are UTC" =
   List.iter [ 0.; 1_760_257_800_000.; 1_709_251_199_999. ] ~f:(fun ms ->
     print_endline (Format.time_ms ms));
-  [%expect
-    {|
+  [%expect {|
     1970-01-01 00:00
     2025-10-12 08:30
     2024-02-29 23:59

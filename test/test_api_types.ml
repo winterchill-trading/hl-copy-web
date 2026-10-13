@@ -37,8 +37,7 @@ let%expect_test "timestamps encode as JSON integers and accept floats" =
   round_trip (module Time_ms) 1_760_000_000_123.;
   print_s
     [%sexp (Time_ms.t_of_yojson (Yojson.Safe.from_string "1760000000123.0") : Time_ms.t)];
-  [%expect
-    {|
+  [%expect {|
     1760000000123
     1760000000123
     |}]

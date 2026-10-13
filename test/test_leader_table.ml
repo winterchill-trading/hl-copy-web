@@ -55,13 +55,24 @@ let%expect_test "filters combine" =
   let filter = { Filter.empty with max_drawdown = Some 0.2; min_trades = Some 200 } in
   show (apply (Fixtures.leaders ()) ~sort:Sort.default ~filter);
   print_endline "--";
-  show (apply (Fixtures.leaders ()) ~sort:Sort.default ~filter:{ Filter.empty with query = " MEAN" });
   show
-    (apply (Fixtures.leaders ()) ~sort:Sort.default ~filter:{ Filter.empty with query = "0xe7" });
+    (apply
+       (Fixtures.leaders ())
+       ~sort:Sort.default
+       ~filter:{ Filter.empty with query = " MEAN" });
+  show
+    (apply
+       (Fixtures.leaders ())
+       ~sort:Sort.default
+       ~filter:{ Filter.empty with query = "0xe7" });
   print_endline "--";
   show
-    (apply (Fixtures.leaders ()) ~sort:Sort.default ~filter:{ Filter.empty with min_score = Some 60. });
-  [%expect {|
+    (apply
+       (Fixtures.leaders ())
+       ~sort:Sort.default
+       ~filter:{ Filter.empty with min_score = Some 60. });
+  [%expect
+    {|
     1 meanrev        score= 69.2 roi=  52.2% dd= 13.8% trades=684
     4 0xfb03...ec6c  score= 56.3 roi=  13.9% dd= 10.9% trades=226
     5 0x4d57...e478  score= 51.5 roi=  21.0% dd=  8.6% trades=273

@@ -27,7 +27,8 @@ let%expect_test "commands walk the state machine" =
         d := d';
         states !d
       | Error e -> print_s [%sexp (e : Error.t)]);
-  [%expect {|
+  [%expect
+    {|
     f-1:running f-2:paused
     f-1:paused f-2:paused
     ("follow cannot do that now" (state paused) (command pause))

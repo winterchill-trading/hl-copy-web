@@ -22,7 +22,11 @@ let with_commas ~decimals x =
 
 let usd x =
   let decimals = if Float.(abs x >= 10_000.) then 0 else 2 in
-  let sign = if Float.(x < 0.) && not (String.equal (with_commas ~decimals x) "0.00") then "-" else "" in
+  let sign =
+    if Float.(x < 0.) && not (String.equal (with_commas ~decimals x) "0.00")
+    then "-"
+    else ""
+  in
   sign ^ "$" ^ with_commas ~decimals x
 ;;
 
@@ -59,7 +63,8 @@ let number ?(decimals = 4) x =
   let s = with_commas ~decimals x in
   let s =
     if String.mem s '.'
-    then String.rstrip s ~drop:(Char.equal '0') |> String.chop_suffix_if_exists ~suffix:"."
+    then
+      String.rstrip s ~drop:(Char.equal '0') |> String.chop_suffix_if_exists ~suffix:"."
     else s
   in
   if Float.(x < 0.) && not (String.equal s "0") then "-" ^ s else s

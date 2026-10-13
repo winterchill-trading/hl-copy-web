@@ -37,7 +37,8 @@ let%expect_test "multiplier, allowlist and errors" =
     ; max_daily_loss = "-1"
     ; allowlist = "BTC, $$$"
     };
-  [%expect {|
+  [%expect
+    {|
     (Ok
      ((Multiplier 0.25)
       ((max_leverage 3) (max_notional_per_symbol 5000) (max_daily_loss 500)

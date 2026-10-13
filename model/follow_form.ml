@@ -94,7 +94,8 @@ let parse_allowlist s =
 ;;
 
 let valid_coin c =
-  String.length c <= 12 && String.for_all c ~f:(fun ch -> Char.is_alphanum ch || Char.equal ch '-')
+  String.length c <= 12
+  && String.for_all c ~f:(fun ch -> Char.is_alphanum ch || Char.equal ch '-')
 ;;
 
 let validate t =
@@ -102,11 +103,19 @@ let validate t =
   let fail field msg = errors := (field, msg) :: !errors in
   (* Accept thousands separators: people type "5,000". *)
   let number field ~lo ~hi =
-    let raw = String.strip (get t field) |> String.filter ~f:(fun c -> not (Char.equal c ',')) in
+    let raw =
+      String.strip (get t field) |> String.filter ~f:(fun c -> not (Char.equal c ','))
+    in
     match Float.of_string_opt raw with
     | Some x when Float.is_finite x && Float.(x >= lo && x <= hi) -> x
-    | Some _ -> fail field (sprintf "must be between %s and %s" (Format.number lo) (Format.number hi)); 0.
-    | None -> fail field "must be a number"; 0.
+    | Some _ ->
+      fail
+        field
+        (sprintf "must be between %s and %s" (Format.number lo) (Format.number hi));
+      0.
+    | None ->
+      fail field "must be a number";
+      0.
   in
   let scale : Scale_mode.t =
     match t.scale_kind with

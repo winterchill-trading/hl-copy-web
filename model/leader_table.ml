@@ -64,14 +64,8 @@ module Sort = struct
 
   let natural_direction : Column.t -> Direction.t = function
     | Rank | Max_drawdown -> Ascending
-    | Score
-    | Pnl
-    | Roi
-    | Win_rate
-    | Trades
-    | Avg_hold
-    | Consistency
-    | Account_value -> Descending
+    | Score | Pnl | Roi | Win_rate | Trades | Avg_hold | Consistency | Account_value ->
+      Descending
   ;;
 
   let default = { column = Rank; direction = Ascending }
@@ -117,6 +111,7 @@ let apply leaders ~(sort : Sort.t) ~filter =
     | Descending -> -c
   in
   List.filter leaders ~f:(Filter.matches filter)
-  |> List.stable_sort ~compare:(fun (a : Leader.t) (b : Leader.t) -> Int.compare a.rank b.rank)
+  |> List.stable_sort ~compare:(fun (a : Leader.t) (b : Leader.t) ->
+    Int.compare a.rank b.rank)
   |> List.stable_sort ~compare:compare_key
 ;;

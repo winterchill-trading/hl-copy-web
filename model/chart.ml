@@ -30,7 +30,15 @@ let nice_step x =
   else (
     let power = 10. ** Float.round_down (Float.log10 x) in
     let m = x /. power in
-    let base = if Float.(m <= 1.) then 1. else if Float.(m <= 2.) then 2. else if Float.(m <= 5.) then 5. else 10. in
+    let base =
+      if Float.(m <= 1.)
+      then 1.
+      else if Float.(m <= 2.)
+      then 2.
+      else if Float.(m <= 5.)
+      then 5.
+      else 10.
+    in
     base *. power)
 ;;
 
@@ -39,7 +47,6 @@ let pad_left = 72.
 let pad_right = 12.
 let pad_top = 10.
 let pad_bottom = 24.
-
 let date_label ms = String.prefix (Format.time_ms ms) 10
 
 let equity_curve (points : Equity_point.t list) ~width ~height =
@@ -82,7 +89,8 @@ let equity_curve (points : Equity_point.t list) ~width ~height =
     in
     let mid = t0 +. (span /. 2.) in
     let x_ticks =
-      List.map [ t0; mid; t1 ] ~f:(fun time -> { Tick.at = x_of time; label = date_label time })
+      List.map [ t0; mid; t1 ] ~f:(fun time ->
+        { Tick.at = x_of time; label = date_label time })
     in
     Some
       { width
