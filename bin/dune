@@ -4,3 +4,12 @@
  (libraries core bonsai_web copy_web_ui)
  (preprocess
   (pps ppx_jane)))
+
+; The installed package is the static site: share/hl-copy-web/{index.html,main.js}.
+
+(install
+ (package hl-copy-web)
+ (section share)
+ (files
+  (main.bc.js as main.js)
+  (../static/index.html as index.html)))
