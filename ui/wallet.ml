@@ -18,11 +18,14 @@ let connect provider =
   | Ok (account :: _) ->
     (match Address.of_string_opt account with
      | Some address -> Ok { address; kind = Injected provider }
-     | None -> Or_error.error_s [%message "the wallet returned a malformed address" account])
+     | None ->
+       Or_error.error_s [%message "the wallet returned a malformed address" account])
 ;;
 
 let demo =
-  { address = Address.of_string "0x000000000000000000000000000000000000dead"; kind = Demo }
+  { address = Address.of_string "0x000000000000000000000000000000000000dead"
+  ; kind = Demo
+  }
 ;;
 
 let is_demo t =

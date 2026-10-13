@@ -11,27 +11,37 @@ let nav_link ~current route label =
     | Leaders, Leaders | (Leader _ | Follow _), Leaders | Dashboard, Dashboard -> true
     | _ -> false
   in
-  Widgets.link ~attrs:(if active then [ A.class_ "active" ] else []) route [ N.text label ]
+  Widgets.link
+    ~attrs:(if active then [ A.class_ "active" ] else [])
+    route
+    [ N.text label ]
 ;;
 
 let header ~(backend : Backend.t) ~route ~session ~logout =
   N.header
     ~attrs:[ A.class_ "top" ]
     [ N.div ~attrs:[ A.class_ "brand" ] [ N.text "hl-copy" ]
-    ; N.nav [ nav_link ~current:route Leaders "Leaders"; nav_link ~current:route Dashboard "Dashboard" ]
+    ; N.nav
+        [ nav_link ~current:route Leaders "Leaders"
+        ; nav_link ~current:route Dashboard "Dashboard"
+        ]
     ; N.span
         ~attrs:[ A.classes [ "badge"; (if backend.is_mock then "mock" else "live") ] ]
         [ N.text backend.description ]
     ; (match session with
        | None ->
-         Widgets.link ~attrs:[ A.classes [ "btn"; "primary" ] ] Login [ N.text "Connect wallet" ]
+         Widgets.link
+           ~attrs:[ A.classes [ "btn"; "primary" ] ]
+           Login
+           [ N.text "Connect wallet" ]
        | Some ((wallet : Wallet.t), (s : Auth.Session.t)) ->
          N.div
            ~attrs:[ A.class_ "account" ]
            [ N.span
                ~attrs:[ A.class_ "mono" ]
                [ N.text
-                   (Address.short s.address ^ if Wallet.is_demo wallet then " (demo)" else "")
+                   (Address.short s.address
+                    ^ if Wallet.is_demo wallet then " (demo)" else "")
                ]
            ; Widgets.button ~on_click:logout "Sign out"
            ])

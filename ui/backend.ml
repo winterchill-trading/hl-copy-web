@@ -25,7 +25,9 @@ let decode of_yojson body =
 
 let api_error ~code body =
   let detail =
-    match Or_error.try_with (fun () -> Api_error.t_of_yojson (Yojson.Safe.from_string body)) with
+    match
+      Or_error.try_with (fun () -> Api_error.t_of_yojson (Yojson.Safe.from_string body))
+    with
     | Ok { error } -> error
     | Error _ -> String.prefix body 200
   in
@@ -79,7 +81,8 @@ let live ~base_url =
           ~url:(url Endpoint.follows)
           ~body:(Follow_request.yojson_of_t r)
           Follow.t_of_yojson)
-  ; dashboard = (fun ~token -> call ~token ~url:(url Endpoint.follows) Dashboard.t_of_yojson)
+  ; dashboard =
+      (fun ~token -> call ~token ~url:(url Endpoint.follows) Dashboard.t_of_yojson)
   ; follow_command =
       (fun ~token ~id command ->
         call
@@ -115,7 +118,9 @@ let mock ~fixtures =
   ; challenge = (fun _ -> file "auth-challenge.json" Auth.Challenge.t_of_yojson)
   ; login =
       (fun r ->
-        let%map.Deferred.Or_error session = file "session.json" Auth.Session.t_of_yojson in
+        let%map.Deferred.Or_error session =
+          file "session.json" Auth.Session.t_of_yojson
+        in
         { session with address = r.address })
   ; agent_offer = (fun ~token:_ -> file "agent-offer.json" Agent_offer.t_of_yojson)
   ; follow =

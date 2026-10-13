@@ -20,7 +20,9 @@ let error_of_js (e : Ojs.t) =
 let of_promise promise =
   let ivar = Ivar.create () in
   let on_ok = Ojs.fun_to_js 1 (fun v -> Ivar.fill_if_empty ivar (Ok v)) in
-  let on_error = Ojs.fun_to_js 1 (fun e -> Ivar.fill_if_empty ivar (Error (error_of_js e))) in
+  let on_error =
+    Ojs.fun_to_js 1 (fun e -> Ivar.fill_if_empty ivar (Error (error_of_js e)))
+  in
   ignore (Ojs.call promise "then" [| on_ok; on_error |] : Ojs.t);
   Ivar.read ivar
 ;;
@@ -40,7 +42,9 @@ let request_accounts t =
 
 let chain_id t = request t ~method_:"eth_chainId" ~params:[] |> string_result
 
-let hex_of_utf8 s = "0x" ^ String.concat_map s ~f:(fun c -> sprintf "%02x" (Char.to_int c))
+let hex_of_utf8 s =
+  "0x" ^ String.concat_map s ~f:(fun c -> sprintf "%02x" (Char.to_int c))
+;;
 
 let personal_sign t ~address ~message =
   request

@@ -17,5 +17,4 @@ type request_args =
   }
 
 (** Returns a JS [Promise]. *)
-val request : t -> request_args -> Ojs.t
-[@@js.call]
+val request : t -> request_args -> Ojs.t [@@js.call]

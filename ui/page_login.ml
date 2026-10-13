@@ -72,8 +72,8 @@ let view ~(backend : Backend.t) ~status ~set_status ~login ~session =
     [ N.p
         [ N.text
             "Sign in by signing a one-time message with your wallet. Signing it costs \
-             nothing and grants no permission to trade; following a leader later asks for \
-             a separate approval of a trading-only agent key."
+             nothing and grants no permission to trade; following a leader later asks \
+             for a separate approval of a trading-only agent key."
         ]
     ; signed_in
     ; N.div

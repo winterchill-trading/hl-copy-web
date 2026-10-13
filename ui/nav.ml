@@ -13,8 +13,8 @@ let navigate route =
 let on_change f =
   Dom_html.window##.onhashchange
   := Dom_html.handler (fun _ ->
-       f (current ());
-       Js._true)
+    f (current ());
+    Js._true)
 ;;
 
 let query () =

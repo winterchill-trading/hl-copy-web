@@ -49,7 +49,9 @@ let signed x text =
 let usd_pnl x = signed x (Format.signed_usd x)
 
 let table ?(attrs = []) ~header ~numeric rows =
-  let cell_attrs i = if List.mem numeric i ~equal:Int.equal then [ A.class_ "num" ] else [] in
+  let cell_attrs i =
+    if List.mem numeric i ~equal:Int.equal then [ A.class_ "num" ] else []
+  in
   N.table
     ~attrs:(A.class_ "grid" :: attrs)
     [ N.thead [ N.tr (List.mapi header ~f:(fun i h -> N.th ~attrs:(cell_attrs i) [ h ])) ]
@@ -64,7 +66,8 @@ let positions_table (positions : Position.t list) =
   | [] -> notice "No open positions."
   | _ ->
     table
-      ~header:(List.map [ "Coin"; "Side"; "Size"; "Entry"; "Leverage"; "Unrealized" ] ~f:N.text)
+      ~header:
+        (List.map [ "Coin"; "Side"; "Size"; "Entry"; "Leverage"; "Unrealized" ] ~f:N.text)
       ~numeric:[ 2; 3; 4; 5 ]
       (List.map positions ~f:(fun p ->
          [ N.text p.coin

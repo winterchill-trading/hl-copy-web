@@ -5,8 +5,19 @@ open! Core
 open! Bonsai_web
 open Api_types
 
-val link : ?attrs:Vdom.Attr.t list -> Copy_web_model.Route.t -> Vdom.Node.t list -> Vdom.Node.t
-val button : ?primary:bool -> ?disabled:bool -> on_click:unit Effect.t -> string -> Vdom.Node.t
+val link
+  :  ?attrs:Vdom.Attr.t list
+  -> Copy_web_model.Route.t
+  -> Vdom.Node.t list
+  -> Vdom.Node.t
+
+val button
+  :  ?primary:bool
+  -> ?disabled:bool
+  -> on_click:unit Effect.t
+  -> string
+  -> Vdom.Node.t
+
 val error_box : Error.t -> Vdom.Node.t
 val notice : string -> Vdom.Node.t
 val loading : Vdom.Node.t

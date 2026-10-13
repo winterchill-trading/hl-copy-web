@@ -99,7 +99,8 @@ let view (response : Leaders_response.t) ~sort ~set_sort ~filter ~set_filter =
     :: List.map columns ~f:(header_cell ~sort ~set_sort)
   in
   let body =
-    List.map rows ~f:(fun l -> cells l Rank :: trader_cell l :: List.map columns ~f:(cells l))
+    List.map rows ~f:(fun l ->
+      cells l Rank :: trader_cell l :: List.map columns ~f:(cells l))
   in
   N.div
     [ filters ~filter ~set_filter

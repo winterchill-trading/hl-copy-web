@@ -50,9 +50,10 @@ let scale_select ~(form : Follow_form.t) ~set_form =
            N.option
              ~attrs:
                (A.value (Follow_form.Scale_kind.to_string kind)
-                :: (if Follow_form.Scale_kind.equal kind form.scale_kind
-                    then [ A.selected ]
-                    else []))
+                ::
+                (if Follow_form.Scale_kind.equal kind form.scale_kind
+                 then [ A.selected ]
+                 else []))
              [ N.text (Follow_form.Scale_kind.label kind) ]))
     ]
 ;;
@@ -77,7 +78,9 @@ let typed_data_view ~title json =
   N.details
     ~attrs:[ A.create "open" "" ]
     [ N.summary [ N.text title ]
-    ; N.pre ~attrs:[ A.class_ "typed-data" ] [ N.text (Yojson.Safe.pretty_to_string json) ]
+    ; N.pre
+        ~attrs:[ A.class_ "typed-data" ]
+        [ N.text (Yojson.Safe.pretty_to_string json) ]
     ]
 ;;
 
@@ -110,7 +113,9 @@ let sign_and_follow
   let%bind agent_signature =
     Wallet.sign_typed_data wallet (Approve_agent.typed_data offer.approve_agent)
   in
-  let builder_fee = Option.filter offer.approve_builder_fee ~f:(fun _ -> include_builder_fee) in
+  let builder_fee =
+    Option.filter offer.approve_builder_fee ~f:(fun _ -> include_builder_fee)
+  in
   let%bind builder_fee_signature =
     match builder_fee with
     | None -> return None
@@ -148,7 +153,9 @@ let approval_view
     match validated with
     | Error _ -> Effect.Ignore
     | Ok (scale, caps) ->
-      let%bind () = set_status (Status.Busy "Waiting for the signatures in your wallet...") in
+      let%bind () =
+        set_status (Status.Busy "Waiting for the signatures in your wallet...")
+      in
       (match%bind
          Effect.of_deferred_thunk (fun () ->
            sign_and_follow
@@ -187,7 +194,8 @@ let approval_view
                    ~attrs:
                      [ A.type_ "checkbox"
                      ; A.checked_prop include_builder_fee
-                     ; A.on_click (fun _ -> set_include_builder_fee (not include_builder_fee))
+                     ; A.on_click (fun _ ->
+                         set_include_builder_fee (not include_builder_fee))
                      ]
                    ()
                ; N.textf
@@ -205,7 +213,8 @@ let approval_view
     ; N.p
         ~attrs:[ A.class_ "muted" ]
         [ N.text
-            "The domain chain id is replaced by your wallet's current chain when you sign."
+            "The domain chain id is replaced by your wallet's current chain when you \
+             sign."
         ]
     ; N.div
         ~attrs:[ A.class_ "actions" ]
@@ -252,7 +261,11 @@ let view
         [ Widgets.notice "Connect your wallet to follow a leader."
         ; N.div
             ~attrs:[ A.class_ "actions" ]
-            [ Widgets.link ~attrs:[ A.classes [ "btn"; "primary" ] ] Login [ N.text "Connect wallet" ] ]
+            [ Widgets.link
+                ~attrs:[ A.classes [ "btn"; "primary" ] ]
+                Login
+                [ N.text "Connect wallet" ]
+            ]
         ]
     | Some ((wallet : Wallet.t), (session : Auth.Session.t)) ->
       (match offer with

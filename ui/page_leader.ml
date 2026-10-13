@@ -97,5 +97,7 @@ let component ~(backend : Backend.t) ~route (local_ graph) =
   let detail = Remote.fetch ~equal:Address.equal ~load:backend.leader key graph in
   let%map detail in
   N.div
-    [ Widgets.link Leaders [ N.text "\u{2190} All leaders" ]; Widgets.remote detail ~f:view ]
+    [ Widgets.link Leaders [ N.text "\u{2190} All leaders" ]
+    ; Widgets.remote detail ~f:view
+    ]
 ;;

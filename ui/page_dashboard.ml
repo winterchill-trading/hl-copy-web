@@ -22,13 +22,13 @@ let caps_text (c : Caps.t) =
 ;;
 
 let state_badge (s : Follow_state.t) =
-  N.span ~attrs:[ A.classes [ "badge"; Follow_state.to_string s ] ] [ N.text (Follow_state.to_string s) ]
+  N.span
+    ~attrs:[ A.classes [ "badge"; Follow_state.to_string s ] ]
+    [ N.text (Follow_state.to_string s) ]
 ;;
 
 let follow_card ~run (f : Follow.t) =
-  let command c label =
-    Widgets.button ~on_click:(run f.id c) label
-  in
+  let command c label = Widgets.button ~on_click:(run f.id c) label in
   let buttons =
     match f.state with
     | Running -> [ command Follow_command.Pause "Pause"; command Stop "Stop" ]
@@ -41,7 +41,9 @@ let follow_card ~run (f : Follow.t) =
         ~attrs:[ A.class_ "follow-head" ]
         [ Widgets.link (Leader f.leader) [ N.text (Address.short f.leader) ]
         ; state_badge f.state
-        ; N.span ~attrs:[ A.class_ "muted" ] [ N.text ("since " ^ Format.time_ms f.created_at) ]
+        ; N.span
+            ~attrs:[ A.class_ "muted" ]
+            [ N.text ("since " ^ Format.time_ms f.created_at) ]
         ]
     ; Widgets.stats
         [ Widgets.stat ~label:"PnL" (Widgets.usd_pnl f.pnl)
@@ -54,7 +56,9 @@ let follow_card ~run (f : Follow.t) =
 ;;
 
 let view ~(dashboard : Dashboard.t) ~run =
-  let running = List.count dashboard.follows ~f:(fun f -> Follow_state.equal f.state Running) in
+  let running =
+    List.count dashboard.follows ~f:(fun f -> Follow_state.equal f.state Running)
+  in
   N.div
     [ Widgets.stats
         [ Widgets.stat ~label:"Account" (N.text (Address.short dashboard.address))
@@ -89,7 +93,8 @@ let component ~(backend : Backend.t) ~route ~session (local_ graph) =
   let key =
     let%map route and session and generation in
     match (route : Route.t), session with
-    | Dashboard, Some (_, (s : Auth.Session.t)) -> Some { Key.token = s.token; generation }
+    | Dashboard, Some (_, (s : Auth.Session.t)) ->
+      Some { Key.token = s.token; generation }
     | _ -> None
   in
   let dashboard =
@@ -125,7 +130,10 @@ let component ~(backend : Backend.t) ~route ~session (local_ graph) =
        | None ->
          N.div
            [ Widgets.notice "Connect your wallet to see your follows."
-           ; Widgets.link ~attrs:[ A.classes [ "btn"; "primary" ] ] Login [ N.text "Connect wallet" ]
+           ; Widgets.link
+               ~attrs:[ A.classes [ "btn"; "primary" ] ]
+               Login
+               [ N.text "Connect wallet" ]
            ]
        | Some _ -> Widgets.remote dashboard ~f:(fun dashboard -> view ~dashboard ~run))
     ; Option.value_map command_error ~default:N.none ~f:Widgets.error_box

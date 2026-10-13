@@ -35,7 +35,11 @@ let view ?(width = 720.) ?(height = 260.) points =
     let dates =
       List.mapi c.x_ticks ~f:(fun i tick ->
         let anchor =
-          if i = 0 then "start" else if i = List.length c.x_ticks - 1 then "end" else "middle"
+          if i = 0
+          then "start"
+          else if i = List.length c.x_ticks - 1
+          then "end"
+          else "middle"
         in
         S.text
           ~attrs:
