@@ -1,0 +1,11 @@
+; Some library in the app's closure contains effect handlers that the app never runs.
+; Selecting js_of_ocaml's default "disabled" backend explicitly, for every compilation
+; unit including the opam libraries, silences the warning about them.
+
+(env
+ (_
+  (js_of_ocaml
+   (flags
+    (:standard --effects=disabled))
+   (build_runtime_flags
+    (:standard --effects=disabled)))))
