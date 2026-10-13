@@ -164,9 +164,12 @@ smoke tests.
 
 ## Notes
 
-- Bonsai here is the `v0.18~preview` release on the OxCaml switch. There is no
-  `ppx_bonsai` on that switch, so the code uses `let%map` with `Bonsai.Let_syntax`
-  instead of `let%arr` and `let%sub`.
+- Bonsai here is the `v0.18~preview` release on the OxCaml switch. `let%arr` and
+  `let%sub` come from `bonsai.ppx_bonsai`, which `ppx_jane` does not include; this code
+  uses `let%map` with `Bonsai.Let_syntax` and `ppx_jane` alone.
+- `hl-copy-web.opam` keeps `dune` below 3.23: under upstream dune 3.24 `bonsai_web`
+  itself fails to build (its CSS inliner gets `./`-prefixed paths), and on a fresh
+  switch the solver prefers 3.24 over the ox repository's 3.22.2+ox.
 - `Bonsai_web` exports a `View` module, so the shared view helpers are `Widgets`.
 - Some library in the closure contains OCaml 5 effect handlers that the app never runs;
   the root `dune` file turns off js_of_ocaml's link-time warning about them.
