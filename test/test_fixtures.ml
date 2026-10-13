@@ -27,7 +27,7 @@ let%expect_test "every mock response decodes and round trips" =
     Agent_offer.t_of_yojson
     Agent_offer.yojson_of_t
     Agent_offer.equal;
-  check "dashboard.json" Dashboard.t_of_yojson Dashboard.yojson_of_t Dashboard.equal;
+  check "me.json" Me.t_of_yojson Me.yojson_of_t Me.equal;
   let leaders = Fixtures.leaders () in
   List.iter leaders ~f:(fun (l : Leader.t) ->
     let d = Fixtures.detail l.address in

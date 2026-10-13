@@ -150,9 +150,16 @@ def main():
             "created_at": AS_OF - (12 - 5 * i) * DAY, "pnl": round(rng.gauss(150, 300), 2),
             "positions": positions(rng, 2 - i, 8_000),
         })
-    write("dashboard.json", {
+    # The agent's approval ran out a day after the snapshot, so against any current
+    # clock the follow page asks for a new approveAgent signature first.
+    write("me.json", {
         "address": me, "account_value": 12_480.55,
-        "total_pnl": round(sum(f["pnl"] for f in follows), 2), "follows": follows,
+        "total_pnl": round(sum(f["pnl"] for f in follows), 2),
+        "agent": {
+            "agent_address": address("fixture-old-agent"), "agent_name": "hl-copy",
+            "approved": True, "valid_until": AS_OF + DAY, "builder_fee": "0.01%",
+        },
+        "follows": follows,
     })
 
 

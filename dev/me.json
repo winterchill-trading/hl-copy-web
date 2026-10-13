@@ -2,6 +2,13 @@
   "address": "0xf97609fe4df7ede5bcb92492bbe8e795881d3f9b",
   "account_value": 12480.55,
   "total_pnl": 128.52,
+  "agent": {
+    "agent_address": "0x556d6049a1d4309d117d729cee4d466ba9206625",
+    "agent_name": "hl-copy",
+    "approved": true,
+    "valid_until": 1760344200000,
+    "builder_fee": "0.01%"
+  },
   "follows": [
     {
       "id": "f-1",
