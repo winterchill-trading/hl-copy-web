@@ -1,42 +1,82 @@
 open! Core
 open Api_types
 
-let transition (state : Follow_state.t) (command : Follow_command.t) =
-  match state, command with
-  | Running, Pause -> Ok Follow_state.Paused
-  | Paused, Resume -> Ok Running
-  | (Running | Paused), Stop -> Ok Stopped
-  | _ ->
+let find_follow (me : Me.t) ~id =
+  match List.find me.follows ~f:(fun f -> String.equal f.id id) with
+  | Some f -> Ok f
+  | None -> Or_error.error_s [%message "no such follow" id]
+;;
+
+let replace_follow (me : Me.t) (follow : Follow.t) =
+  let follows =
+    List.map me.follows ~f:(fun f -> if String.equal f.id follow.id then follow else f)
+  in
+  { me with follows }, follow
+;;
+
+let update_follow me ~id ({ state } : Follow_update.t) =
+  let%bind.Or_error follow = find_follow me ~id in
+  match follow.state, state with
+  | Running, Paused | Paused, Running -> Ok (replace_follow me { follow with state })
+  | from, to_ ->
     Or_error.error_s
       [%message
-        "follow cannot do that now"
-          ~state:(Follow_state.to_string state)
-          ~command:(Follow_command.to_string command)]
+        "follow cannot change state"
+          ~from:(Follow_state.to_string from)
+          ~to_:(Follow_state.to_string to_)]
 ;;
 
-let apply_command (d : Dashboard.t) ~id command =
-  match List.find d.follows ~f:(fun f -> String.equal f.id id) with
-  | None -> Or_error.error_s [%message "no such follow" id]
-  | Some follow ->
-    let%map.Or_error state = transition follow.state command in
-    let follow = { follow with state } in
-    let follows =
-      List.map d.follows ~f:(fun f -> if String.equal f.id id then follow else f)
+let stop_follow me ~id =
+  let%bind.Or_error follow = find_follow me ~id in
+  match follow.state with
+  | Stopped -> Or_error.error_s [%message "follow already stopped" id]
+  | Running | Paused -> Ok (replace_follow me { follow with state = Stopped })
+;;
+
+let add_follow (me : Me.t) (r : Follow_request.t) ~now =
+  match Agent_check.of_status me.agent ~now with
+  | (Missing | Not_approved | Expired _) as check ->
+    Or_error.error_s [%message "approve an agent first" (check : Agent_check.t)]
+  | Active ->
+    let follow =
+      { Follow.id = sprintf "f-%d" (List.length me.follows + 1)
+      ; leader = r.leader
+      ; scale = r.scale
+      ; caps = r.caps
+      ; state = Running
+      ; created_at = now
+      ; pnl = 0.
+      ; positions = []
+      }
     in
-    { d with follows }, follow
+    Ok ({ me with follows = me.follows @ [ follow ] }, follow)
 ;;
 
-let add_follow (d : Dashboard.t) (r : Follow_request.t) ~now =
-  let follow =
-    { Follow.id = sprintf "f-%d" (List.length d.follows + 1)
-    ; leader = r.leader
-    ; scale = r.scale
-    ; caps = r.caps
-    ; state = Running
-    ; created_at = now
-    ; pnl = 0.
-    ; positions = []
+let max_validity_ms = 180. *. 86_400_000.
+
+let approve_agent
+  (me : Me.t)
+  ({ approve_agent = a; signature = _ } : Agent_approval.t)
+  ~now
+  =
+  let status =
+    { Agent_status.agent_address = a.agent_address
+    ; agent_name = a.agent_name
+    ; approved = true
+    ; valid_until = Some (now +. max_validity_ms)
+    ; builder_fee = Option.bind me.agent ~f:(fun s -> s.builder_fee)
     }
   in
-  { d with follows = d.follows @ [ follow ] }, follow
+  { me with agent = Some status }, status
+;;
+
+let approve_builder_fee
+  (me : Me.t)
+  ({ approve_builder_fee = b; signature = _ } : Builder_fee_approval.t)
+  =
+  match me.agent with
+  | None -> Or_error.error_string "approve an agent before a builder fee"
+  | Some status ->
+    let status = { status with builder_fee = Some b.max_fee_rate } in
+    Ok ({ me with agent = Some status }, status)
 ;;
