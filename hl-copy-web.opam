@@ -8,7 +8,7 @@ homepage: "https://github.com/winterchill-trading/hl-copy-web"
 bug-reports: "https://github.com/winterchill-trading/hl-copy-web/issues"
 depends: [
   "ocaml" {>= "5.2"}
-  "dune" {>= "3.17"}
+  "dune" {>= "3.17" & < "3.23"}
   "core"
   "hl-copy-api-types" {= version}
   "bonsai_web"

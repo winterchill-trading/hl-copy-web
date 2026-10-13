@@ -31,7 +31,12 @@
  (depends
   (ocaml
    (>= 5.2))
-  dune
+  ; bonsai_web runs ppx_css's css_inliner on %{deps}. Upstream dune 3.24.2, which the
+  ; solver otherwise picks on a fresh switch, expands that to "./app.css", the inliner
+  ; then writes "include ./app__generated" and bonsai_web fails with "Syntax error".
+  ; The ox repository's dune 3.22.2+ox expands it to "app.css".
+  (dune
+   (< 3.23))
   core
   (hl-copy-api-types
    (= :version))
