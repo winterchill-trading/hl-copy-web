@@ -162,6 +162,10 @@ with the other dependencies and caches the switch, and a guarded step installs i
 restored switch predates the dependency. `actions/setup-node` provides node for the
 smoke tests.
 
+The first (cold) run on 2026-10-13 took 24 min 50 s: 23 min 44 s in `ox-setup`
+(compiler, the Jane Street stack and `bonsai_web` with its web dependencies), 58 s for
+`dune build` and 4 s for `dune test`. Later runs restore the cached switch.
+
 ## Notes
 
 - Bonsai here is the `v0.18~preview` release on the OxCaml switch. `let%arr` and
