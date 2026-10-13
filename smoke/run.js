@@ -126,6 +126,7 @@ async function main() {
   if (!message.includes("Nonce: 7f3a91c2")) fail("personal_sign got " + message);
   if (signed.params[1] !== wallet.account.toLowerCase()) fail("personal_sign address " + signed.params[1]);
   if (!bodyText().includes("0xabcd...0001")) fail("header should show the wallet address");
+  if (!bodyText().includes("approval expired on 2025-10-13 08:30 UTC")) fail("expired agent notice missing");
   step("wallet login: eth_requestAccounts, personal_sign of the hex-encoded challenge");
 
   // Dashboard commands
@@ -143,6 +144,7 @@ async function main() {
   const leverage = all("input").find((i) => i.getAttribute("name") === "Max_leverage");
   type(leverage, "x");
   await waitFor("validation error", () => bodyText().includes("must be a number"));
+  await waitFor("review button", () => byText("button", "Review agent approval"));
   if (!byText("button", "Review agent approval").disabled) fail("review should be disabled while invalid");
   type(leverage, "2");
   await waitFor("valid form", () => !bodyText().includes("must be a number"));
@@ -162,6 +164,18 @@ async function main() {
   if (typeof typed[0].message.nonce !== "number") fail("nonce must be a JSON number");
   if (typed[1].primaryType !== "HyperliquidTransaction:ApproveBuilderFee") fail("second signature should be approveBuilderFee");
   step("sign and follow: two eth_signTypedData_v4 calls, then the follow shows on the dashboard");
+
+  // A second leader: the agent is active now, so no new signature is needed.
+  if (bodyText().includes("approval expired")) fail("agent should be active after approval");
+  const other = (await (async () => { location.hash = "#/leaders"; await waitFor("leaders again", () => rows() && rows().length === 8); return rows()[1]; })())
+    .querySelector("a").getAttribute("href").split("/").pop();
+  location.hash = "#/follow/" + other;
+  await waitFor("direct follow button", () => byText("button", "Follow"));
+  if (!bodyText().includes("Your trading agent is approved.")) fail("agent status line missing");
+  click(byText("button", "Follow"), "follow");
+  await waitFor("fourth follow", () => location.hash === "#/dashboard" && document.querySelector("#follow-f-4"));
+  if (wallet.calls.filter((c) => c.method === "eth_signTypedData_v4").length !== 2) fail("no new signature expected");
+  step("with an active agent, following needs no signature");
 
   if (consoleErrors.length) fail("console errors: " + consoleErrors.join(" | "));
   print(`all ${steps.length} steps passed in ${Date.now() - t0} ms; ${XMLHttpRequest.log.length} fixture requests`);

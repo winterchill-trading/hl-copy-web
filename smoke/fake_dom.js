@@ -237,8 +237,9 @@ function wrapDebug(obj, label) {
   });
 }
 
-// Serves XMLHttpRequest GETs relative to [root] from the file system.
-function makeXhr(root) {
+// Serves XMLHttpRequests: [handler(method, url, headers, body)] may answer with
+// {status, body}; otherwise the url is read as a file relative to [root].
+function makeXhr(root, handler) {
   return class FakeXMLHttpRequest {
     constructor() { this.readyState = 0; this.status = 0; this._headers = {}; this.responseType = ""; this.upload = {}; }
     open(method, url) { this._method = method; this._url = url; this.readyState = 1; }
@@ -248,15 +249,21 @@ function makeXhr(root) {
     getAllResponseHeaders() { return "content-type: application/json\r\n"; }
     abort() {}
     addEventListener(type, fn) { this["on" + type] = fn; }
-    send() {
+    send(body) {
       setTimeout(() => {
-        const file = path.join(root, decodeURIComponent(this._url.split("?")[0]));
-        try {
-          this.responseText = fs.readFileSync(file, "utf8");
-          this.status = 200;
-        } catch (e) {
-          this.responseText = JSON.stringify({ error: "not found: " + this._url });
-          this.status = 404;
+        const answer = handler && handler(this._method, this._url, this._headers, body);
+        if (answer) {
+          this.status = answer.status;
+          this.responseText = typeof answer.body === "string" ? answer.body : JSON.stringify(answer.body);
+        } else {
+          const file = path.join(root, decodeURIComponent(this._url.split("?")[0]));
+          try {
+            this.responseText = fs.readFileSync(file, "utf8");
+            this.status = 200;
+          } catch (e) {
+            this.responseText = JSON.stringify({ error: "not found: " + this._url });
+            this.status = 404;
+          }
         }
         this.response = this.responseText;
         this.statusText = this.status === 200 ? "OK" : "Not Found";
@@ -270,7 +277,7 @@ function makeXhr(root) {
   };
 }
 
-function install({ root, hash = "", search = "" }) {
+function install({ root, hash = "", search = "", handler }) {
   const document = new Document_();
   document.defaultView = globalThis;
   const app = document.createElement("div");
@@ -330,7 +337,7 @@ function install({ root, hash = "", search = "" }) {
     innerWidth: 1280,
     innerHeight: 800,
     devicePixelRatio: 1,
-    XMLHttpRequest: makeXhr(root),
+    XMLHttpRequest: makeXhr(root, handler),
     Node: Node_,
     Element: Element_,
     HTMLElement: Element_,
