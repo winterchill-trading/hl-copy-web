@@ -21,7 +21,7 @@ let sign_in ~(backend : Backend.t) ~set_status ~login (wallet : Wallet.t) =
       let%bind challenge = backend.challenge { address = wallet.address } in
       let%bind signature = Wallet.personal_sign wallet ~message:challenge.message in
       let%map session =
-        backend.login { address = wallet.address; nonce = challenge.nonce; signature }
+        backend.verify { address = wallet.address; nonce = challenge.nonce; signature }
       in
       session)
   in
