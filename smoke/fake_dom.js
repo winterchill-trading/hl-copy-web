@@ -238,7 +238,8 @@ function wrapDebug(obj, label) {
 }
 
 // Serves XMLHttpRequests: [handler(method, url, headers, body)] may answer with
-// {status, body}; otherwise the url is read as a file relative to [root].
+// {status, body}, or a promise of one (a real HTTP call); otherwise the url is read as a
+// file relative to [root].
 function makeXhr(root, handler) {
   return class FakeXMLHttpRequest {
     constructor() { this.readyState = 0; this.status = 0; this._headers = {}; this.responseType = ""; this.upload = {}; }
@@ -250,8 +251,8 @@ function makeXhr(root, handler) {
     abort() {}
     addEventListener(type, fn) { this["on" + type] = fn; }
     send(body) {
-      setTimeout(() => {
-        const answer = handler && handler(this._method, this._url, this._headers, body);
+      setTimeout(async () => {
+        const answer = handler && (await handler(this._method, this._url, this._headers, body));
         if (answer) {
           this.status = answer.status;
           this.responseText = typeof answer.body === "string" ? answer.body : JSON.stringify(answer.body);
