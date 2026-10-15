@@ -56,7 +56,16 @@ What a visitor sees, page by page:
   where it started) over horizontal grid lines labelled in round dollar amounts, a dashed
   line at the starting equity, and dates under the first, middle and last points. Below
   it, the open positions (coin, long or short, size, entry, leverage, unrealized pnl) and
-  the 25 most recent fills.
+  the 25 most recent fills. When hl-leaderboard has scored the leader with
+  [leader-scoring](https://github.com/winterchill-trading/leader-scoring), the curve is
+  the one its metrics use, and four sections follow it: **Leader score** (the composite
+  score out of 100, rank, percentile, the model's forecast of the next 30 days' Sharpe
+  ratio, the reasons a leader is not ranked, and a table of the weighted components with
+  each one's value, percentile, weight and points), **Metrics** (34 metrics in their
+  units, with which direction is better), **Capacity** (the follower size up to which
+  copying costs at most the threshold, an SVG of the mean cost against follower size on a
+  log axis with the threshold and the capacity marked, and the cost table at 1k to 10M
+  USD) and **Alerts** (newest first, with severity badges).
 - **Follow** (`#/follow/<address>`). The leader summary, then a form: scale mode (equity
   ratio, a fixed multiplier, or a fixed USD notional per position) with its value, max
   leverage, max notional per symbol, max daily loss, minimum order notional and the coins
@@ -146,9 +155,12 @@ deployed pages.
   trips) and the model (routes, formatting, sorting and filtering, chart ticks, form
   validation, agent check, mock account);
 - `smoke/run.js`: the compiled app under node with a minimal fake DOM (`smoke/fake_dom.js`)
-  and a fake wallet, walking every page on mock data: 12 steps from the leaderboard
+  and a fake wallet, walking every page on mock data: 13 steps from the leaderboard
   through login, pause and stop, form validation, the typed data, signing and following
   (about a second);
+- `smoke/leader_live.js`: the leader page against a running `hl-copy-api`
+  (`node smoke/leader_live.js <main.bc.js> . <API URL> [address]`): opens the page and
+  checks the leader-scoring sections render from the live response; read only.
 - `smoke/live.js`: the same app with `?api=` against an in-memory fake of `hl-copy-api`,
   checking method, path, bearer token and body of every request, the request order of the
   approval flow, and how an error reply is shown.
