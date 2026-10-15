@@ -8,3 +8,4 @@ module Chart = Chart
 module Follow_form = Follow_form
 module Mock_state = Mock_state
 module Agent_check = Agent_check
+module Scoring_view = Scoring_view
