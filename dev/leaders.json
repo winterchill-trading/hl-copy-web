@@ -22,7 +22,20 @@
         "month": 52909.85,
         "all_time": 235975.4
       },
-      "followers": 35
+      "followers": 35,
+      "scoring": {
+        "score": 75.71,
+        "rank": 1,
+        "percentile": 1.0,
+        "eligible": true,
+        "predicted_forward_sharpe": 0.4277,
+        "capacity_usd": 229266.03,
+        "alerts": 0,
+        "worst_alert": null,
+        "sharpe": 2.839943,
+        "max_drawdown": 0.137982,
+        "leverage_p95": 1.618969
+      }
     },
     {
       "address": "0x288a5b7ecfa6f9246c15e4eb5730e4acab10be1b",
@@ -45,7 +58,20 @@
         "month": -254922.38,
         "all_time": 446003.88
       },
-      "followers": 4
+      "followers": 4,
+      "scoring": {
+        "score": 64.29,
+        "rank": 4,
+        "percentile": 0.5714,
+        "eligible": true,
+        "predicted_forward_sharpe": 0.1421,
+        "capacity_usd": 959526.11,
+        "alerts": 2,
+        "worst_alert": "warning",
+        "sharpe": 3.735787,
+        "max_drawdown": 0.25193,
+        "leverage_p95": 5.907406
+      }
     },
     {
       "address": "0x6efd2d268744eb94d838819225a339a2f52b12b9",
@@ -68,7 +94,20 @@
         "month": 27510.45,
         "all_time": 50786.83
       },
-      "followers": 4
+      "followers": 4,
+      "scoring": {
+        "score": 70.0,
+        "rank": 2,
+        "percentile": 0.8571,
+        "eligible": true,
+        "predicted_forward_sharpe": 0.5537,
+        "capacity_usd": 1171810.32,
+        "alerts": 0,
+        "worst_alert": null,
+        "sharpe": 1.589818,
+        "max_drawdown": 0.067688,
+        "leverage_p95": 3.090762
+      }
     },
     {
       "address": "0xfb03492ef8227d3c5ea808ee2d63a6eebb4fec6c",
@@ -90,7 +129,20 @@
         "month": 10897.04,
         "all_time": 23597.19
       },
-      "followers": 39
+      "followers": 39,
+      "scoring": {
+        "score": 51.43,
+        "rank": 5,
+        "percentile": 0.4286,
+        "eligible": true,
+        "predicted_forward_sharpe": -0.277,
+        "capacity_usd": 848925.44,
+        "alerts": 0,
+        "worst_alert": null,
+        "sharpe": 1.776142,
+        "max_drawdown": 0.10894,
+        "leverage_p95": 3.440775
+      }
     },
     {
       "address": "0x4d57c7408c19e3a4d7fbbfc2f11dbc4be3dbe478",
@@ -112,7 +164,20 @@
         "month": 4080.12,
         "all_time": 31442.54
       },
-      "followers": 26
+      "followers": 26,
+      "scoring": {
+        "score": 69.29,
+        "rank": 3,
+        "percentile": 0.7143,
+        "eligible": true,
+        "predicted_forward_sharpe": -0.5277,
+        "capacity_usd": 2303537.9,
+        "alerts": 0,
+        "worst_alert": null,
+        "sharpe": 2.296608,
+        "max_drawdown": 0.085835,
+        "leverage_p95": 1.789083
+      }
     },
     {
       "address": "0x3b047266d543bf18fdd2fc4ef6fcdc8bba698fbf",
@@ -135,7 +200,20 @@
         "month": -32486.43,
         "all_time": -12591.03
       },
-      "followers": 14
+      "followers": 14,
+      "scoring": {
+        "score": 41.43,
+        "rank": 6,
+        "percentile": 0.2857,
+        "eligible": true,
+        "predicted_forward_sharpe": -0.1312,
+        "capacity_usd": 1509323.99,
+        "alerts": 1,
+        "worst_alert": "warning",
+        "sharpe": -0.060273,
+        "max_drawdown": 0.277318,
+        "leverage_p95": 3.152374
+      }
     },
     {
       "address": "0xe7e797e5d2f8cdfded79dccc5ca665ede1921f41",
@@ -157,7 +235,20 @@
         "month": -103907.69,
         "all_time": -23439.52
       },
-      "followers": 12
+      "followers": 12,
+      "scoring": {
+        "score": 20.71,
+        "rank": 7,
+        "percentile": 0.1429,
+        "eligible": true,
+        "predicted_forward_sharpe": 0.0793,
+        "capacity_usd": 2129272.67,
+        "alerts": 0,
+        "worst_alert": null,
+        "sharpe": -0.368848,
+        "max_drawdown": 0.21582,
+        "leverage_p95": 1.271487
+      }
     },
     {
       "address": "0xe72583699a89266547539991738926768bf69a91",
@@ -180,7 +271,20 @@
         "month": -155530.21,
         "all_time": -184376.77
       },
-      "followers": 15
+      "followers": 15,
+      "scoring": {
+        "score": 7.14,
+        "rank": 8,
+        "percentile": 0.0,
+        "eligible": true,
+        "predicted_forward_sharpe": 0.8658,
+        "capacity_usd": 2993015.48,
+        "alerts": 2,
+        "worst_alert": "warning",
+        "sharpe": -1.746421,
+        "max_drawdown": 0.299665,
+        "leverage_p95": 4.07539
+      }
     }
   ]
 }

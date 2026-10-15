@@ -19,7 +19,20 @@
       "month": -103907.69,
       "all_time": -23439.52
     },
-    "followers": 12
+    "followers": 12,
+    "scoring": {
+      "score": 20.71,
+      "rank": 7,
+      "percentile": 0.1429,
+      "eligible": true,
+      "predicted_forward_sharpe": 0.0793,
+      "capacity_usd": 2129272.67,
+      "alerts": 0,
+      "worst_alert": null,
+      "sharpe": -0.368848,
+      "max_drawdown": 0.21582,
+      "leverage_p95": 1.271487
+    }
   },
   "equity_curve": [
     {
@@ -811,5 +824,555 @@
       "unrealized_pnl": -1734.34,
       "leverage": 4.9
     }
-  ]
+  ],
+  "scoring": {
+    "score": 20.71,
+    "rank": 7,
+    "percentile": 0.1429,
+    "eligible": true,
+    "reasons": [],
+    "components": [
+      {
+        "metric": "sharpe",
+        "label": "Sharpe",
+        "value": -0.368848,
+        "percentile": 0.142857,
+        "weight": 0.4,
+        "contribution": 5.7143
+      },
+      {
+        "metric": "max_drawdown",
+        "label": "Max drawdown",
+        "value": 0.21582,
+        "percentile": 0.428571,
+        "weight": 0.35,
+        "contribution": 15.0
+      },
+      {
+        "metric": "win_rate",
+        "label": "Win rate",
+        "value": 0.4846,
+        "percentile": 0.0,
+        "weight": 0.25,
+        "contribution": 0.0
+      }
+    ],
+    "predicted_forward_sharpe": 0.0793,
+    "metrics": [
+      {
+        "name": "total_return",
+        "label": "Return",
+        "value": -0.057398,
+        "unit": "ratio",
+        "better": "higher"
+      },
+      {
+        "name": "volatility",
+        "label": "Volatility",
+        "value": 0.416572,
+        "unit": "ratio",
+        "better": "lower"
+      },
+      {
+        "name": "sharpe",
+        "label": "Sharpe",
+        "value": -0.368848,
+        "unit": "number",
+        "better": "higher"
+      },
+      {
+        "name": "sortino",
+        "label": "Sortino",
+        "value": -0.51286,
+        "unit": "number",
+        "better": "higher"
+      },
+      {
+        "name": "max_drawdown",
+        "label": "Max drawdown",
+        "value": 0.21582,
+        "unit": "ratio",
+        "better": "lower"
+      },
+      {
+        "name": "max_drawdown_duration_days",
+        "label": "Longest drawdown",
+        "value": 29.0,
+        "unit": "days",
+        "better": "lower"
+      },
+      {
+        "name": "win_rate",
+        "label": "Win rate",
+        "value": 0.4846,
+        "unit": "ratio",
+        "better": "higher"
+      },
+      {
+        "name": "trades",
+        "label": "Trades",
+        "value": 543.0,
+        "unit": "count",
+        "better": "neither"
+      },
+      {
+        "name": "leverage_p95",
+        "label": "Leverage (p95)",
+        "value": 1.271487,
+        "unit": "multiple",
+        "better": "lower"
+      },
+      {
+        "name": "top_coin_share",
+        "label": "Top coin share",
+        "value": 0.826269,
+        "unit": "ratio",
+        "better": "lower"
+      },
+      {
+        "name": "var_95",
+        "label": "VaR 95%",
+        "value": 0.037901,
+        "unit": "ratio",
+        "better": "lower"
+      },
+      {
+        "name": "cvar_95",
+        "label": "CVaR 95%",
+        "value": 0.05217,
+        "unit": "ratio",
+        "better": "lower"
+      },
+      {
+        "name": "time_in_market",
+        "label": "Time in market",
+        "value": 0.816063,
+        "unit": "ratio",
+        "better": "neither"
+      },
+      {
+        "name": "long_bias",
+        "label": "Long bias",
+        "value": -0.537179,
+        "unit": "number",
+        "better": "neither"
+      }
+    ],
+    "equity_source": "venue",
+    "bar_seconds": 86400.0,
+    "equity_curve": [
+      {
+        "time": 1752481800000,
+        "equity": 408371.26
+      },
+      {
+        "time": 1752568200000,
+        "equity": 403077.6
+      },
+      {
+        "time": 1752654600000,
+        "equity": 412646.4
+      },
+      {
+        "time": 1752741000000,
+        "equity": 422113.67
+      },
+      {
+        "time": 1752827400000,
+        "equity": 432865.54
+      },
+      {
+        "time": 1752913800000,
+        "equity": 428358.37
+      },
+      {
+        "time": 1753000200000,
+        "equity": 424087.21
+      },
+      {
+        "time": 1753086600000,
+        "equity": 428591.74
+      },
+      {
+        "time": 1753173000000,
+        "equity": 434480.08
+      },
+      {
+        "time": 1753259400000,
+        "equity": 441477.39
+      },
+      {
+        "time": 1753345800000,
+        "equity": 441267.58
+      },
+      {
+        "time": 1753432200000,
+        "equity": 437409.34
+      },
+      {
+        "time": 1753518600000,
+        "equity": 441024.86
+      },
+      {
+        "time": 1753605000000,
+        "equity": 437587.17
+      },
+      {
+        "time": 1753691400000,
+        "equity": 434533.63
+      },
+      {
+        "time": 1753777800000,
+        "equity": 429303.44
+      },
+      {
+        "time": 1753864200000,
+        "equity": 422125.83
+      },
+      {
+        "time": 1753950600000,
+        "equity": 397890.27
+      },
+      {
+        "time": 1754037000000,
+        "equity": 391292.17
+      },
+      {
+        "time": 1754123400000,
+        "equity": 395637.24
+      },
+      {
+        "time": 1754209800000,
+        "equity": 393463.32
+      },
+      {
+        "time": 1754296200000,
+        "equity": 395942.48
+      },
+      {
+        "time": 1754382600000,
+        "equity": 391282.84
+      },
+      {
+        "time": 1754469000000,
+        "equity": 396257.66
+      },
+      {
+        "time": 1754555400000,
+        "equity": 384914.41
+      },
+      {
+        "time": 1754641800000,
+        "equity": 387749.49
+      },
+      {
+        "time": 1754728200000,
+        "equity": 381016.83
+      },
+      {
+        "time": 1754814600000,
+        "equity": 386777.95
+      },
+      {
+        "time": 1754901000000,
+        "equity": 381407.97
+      },
+      {
+        "time": 1754987400000,
+        "equity": 399482.73
+      },
+      {
+        "time": 1755073800000,
+        "equity": 412530.04
+      },
+      {
+        "time": 1755160200000,
+        "equity": 424044.3
+      },
+      {
+        "time": 1755246600000,
+        "equity": 426145.9
+      },
+      {
+        "time": 1755333000000,
+        "equity": 442814.82
+      },
+      {
+        "time": 1755419400000,
+        "equity": 448534.09
+      },
+      {
+        "time": 1755505800000,
+        "equity": 451848.96
+      },
+      {
+        "time": 1755592200000,
+        "equity": 456267.22
+      },
+      {
+        "time": 1755678600000,
+        "equity": 453070.08
+      },
+      {
+        "time": 1755765000000,
+        "equity": 453515.89
+      },
+      {
+        "time": 1755851400000,
+        "equity": 437653.26
+      },
+      {
+        "time": 1755937800000,
+        "equity": 444926.11
+      },
+      {
+        "time": 1756024200000,
+        "equity": 434583.53
+      },
+      {
+        "time": 1756110600000,
+        "equity": 442506.65
+      },
+      {
+        "time": 1756197000000,
+        "equity": 439516.46
+      },
+      {
+        "time": 1756283400000,
+        "equity": 429675.63
+      },
+      {
+        "time": 1756369800000,
+        "equity": 427306.22
+      },
+      {
+        "time": 1756456200000,
+        "equity": 419988.46
+      },
+      {
+        "time": 1756542600000,
+        "equity": 420104.57
+      },
+      {
+        "time": 1756629000000,
+        "equity": 417377.82
+      },
+      {
+        "time": 1756715400000,
+        "equity": 431531.52
+      },
+      {
+        "time": 1756801800000,
+        "equity": 438574.16
+      },
+      {
+        "time": 1756888200000,
+        "equity": 454986.25
+      },
+      {
+        "time": 1756974600000,
+        "equity": 454660.79
+      },
+      {
+        "time": 1757061000000,
+        "equity": 456114.8
+      },
+      {
+        "time": 1757147400000,
+        "equity": 461755.89
+      },
+      {
+        "time": 1757233800000,
+        "equity": 465247.6
+      },
+      {
+        "time": 1757320200000,
+        "equity": 460237.92
+      },
+      {
+        "time": 1757406600000,
+        "equity": 456202.6
+      },
+      {
+        "time": 1757493000000,
+        "equity": 455664.64
+      },
+      {
+        "time": 1757579400000,
+        "equity": 459960.01
+      },
+      {
+        "time": 1757665800000,
+        "equity": 488839.43
+      },
+      {
+        "time": 1757752200000,
+        "equity": 490871.71
+      },
+      {
+        "time": 1757838600000,
+        "equity": 472957.72
+      },
+      {
+        "time": 1757925000000,
+        "equity": 482829.05
+      },
+      {
+        "time": 1758011400000,
+        "equity": 480713.49
+      },
+      {
+        "time": 1758097800000,
+        "equity": 478686.7
+      },
+      {
+        "time": 1758184200000,
+        "equity": 473155.96
+      },
+      {
+        "time": 1758270600000,
+        "equity": 452846.97
+      },
+      {
+        "time": 1758357000000,
+        "equity": 459367.46
+      },
+      {
+        "time": 1758443400000,
+        "equity": 457919.32
+      },
+      {
+        "time": 1758529800000,
+        "equity": 466360.39
+      },
+      {
+        "time": 1758616200000,
+        "equity": 485344.95
+      },
+      {
+        "time": 1758702600000,
+        "equity": 477393.7
+      },
+      {
+        "time": 1758789000000,
+        "equity": 469213.12
+      },
+      {
+        "time": 1758875400000,
+        "equity": 471742.4
+      },
+      {
+        "time": 1758961800000,
+        "equity": 481099.05
+      },
+      {
+        "time": 1759048200000,
+        "equity": 477542.58
+      },
+      {
+        "time": 1759134600000,
+        "equity": 471054.93
+      },
+      {
+        "time": 1759221000000,
+        "equity": 480605.65
+      },
+      {
+        "time": 1759307400000,
+        "equity": 453347.07
+      },
+      {
+        "time": 1759393800000,
+        "equity": 454838.32
+      },
+      {
+        "time": 1759480200000,
+        "equity": 455087.86
+      },
+      {
+        "time": 1759566600000,
+        "equity": 431593.51
+      },
+      {
+        "time": 1759653000000,
+        "equity": 430657.23
+      },
+      {
+        "time": 1759739400000,
+        "equity": 424427.52
+      },
+      {
+        "time": 1759825800000,
+        "equity": 423758.1
+      },
+      {
+        "time": 1759912200000,
+        "equity": 412580.09
+      },
+      {
+        "time": 1759998600000,
+        "equity": 416241.15
+      },
+      {
+        "time": 1760085000000,
+        "equity": 409355.15
+      },
+      {
+        "time": 1760171400000,
+        "equity": 400095.61
+      },
+      {
+        "time": 1760257800000,
+        "equity": 384931.74
+      }
+    ],
+    "capacity": {
+      "max_cost_bps": 10.0,
+      "capacity_usd": 2129272.67,
+      "curve": [
+        {
+          "follower_equity": 1000.0,
+          "orders": 120,
+          "mean_cost_bps": 2.004,
+          "median_cost_bps": 1.503,
+          "p90_cost_bps": 4.007,
+          "unfilled_share": 0.0
+        },
+        {
+          "follower_equity": 10000.0,
+          "orders": 120,
+          "mean_cost_bps": 2.038,
+          "median_cost_bps": 1.533,
+          "p90_cost_bps": 4.066,
+          "unfilled_share": 0.0
+        },
+        {
+          "follower_equity": 100000.0,
+          "orders": 120,
+          "mean_cost_bps": 2.376,
+          "median_cost_bps": 1.829,
+          "p90_cost_bps": 4.658,
+          "unfilled_share": 0.0
+        },
+        {
+          "follower_equity": 1000000.0,
+          "orders": 120,
+          "mean_cost_bps": 5.757,
+          "median_cost_bps": 4.788,
+          "p90_cost_bps": 10.575,
+          "unfilled_share": 0.0
+        },
+        {
+          "follower_equity": 10000000.0,
+          "orders": 120,
+          "mean_cost_bps": 39.572,
+          "median_cost_bps": 34.375,
+          "p90_cost_bps": 69.75,
+          "unfilled_share": 1.0
+        }
+      ],
+      "coins_without_book": []
+    },
+    "alerts": []
+  }
 }

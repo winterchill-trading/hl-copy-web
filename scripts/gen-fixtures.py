@@ -78,6 +78,100 @@ def positions(rng, k, equity):
     return out
 
 
+METRICS = [  # name, label, unit, better (leader-scoring's Metric)
+    ("total_return", "Return", "ratio", "higher"),
+    ("volatility", "Volatility", "ratio", "lower"),
+    ("sharpe", "Sharpe", "number", "higher"),
+    ("sortino", "Sortino", "number", "higher"),
+    ("max_drawdown", "Max drawdown", "ratio", "lower"),
+    ("max_drawdown_duration_days", "Longest drawdown", "days", "lower"),
+    ("win_rate", "Win rate", "ratio", "higher"),
+    ("trades", "Trades", "count", "neither"),
+    ("leverage_p95", "Leverage (p95)", "multiple", "lower"),
+    ("top_coin_share", "Top coin share", "ratio", "lower"),
+    ("var_95", "VaR 95%", "ratio", "lower"),
+    ("cvar_95", "CVaR 95%", "ratio", "lower"),
+    ("time_in_market", "Time in market", "ratio", "neither"),
+    ("long_bias", "Long bias", "number", "neither"),
+]
+WEIGHTS = {"sharpe": 0.4, "max_drawdown": 0.35, "win_rate": 0.25}
+
+
+def curve_metrics(curve, breakdown, rng):
+    e = [p["equity"] for p in curve]
+    r = [e[i + 1] / e[i] - 1 for i in range(len(e) - 1)]
+    mean = sum(r) / len(r)
+    sd = math.sqrt(sum((x - mean) ** 2 for x in r) / (len(r) - 1))
+    down = math.sqrt(sum(min(x, 0) ** 2 for x in r) / len(r))
+    tail = sorted(r)[: max(1, len(r) // 20)]
+    peak, start, longest = e[0], 0, 0
+    for i, x in enumerate(e):
+        if x >= peak:
+            longest, peak, start = max(longest, i - start), x, i
+    return {
+        "total_return": e[-1] / e[0] - 1, "volatility": sd * math.sqrt(365),
+        "sharpe": mean / sd * math.sqrt(365), "sortino": mean / down * math.sqrt(365) if down else None,
+        "max_drawdown": max_drawdown(curve), "max_drawdown_duration_days": float(max(longest, len(e) - 1 - start)),
+        "win_rate": breakdown["win_rate"], "trades": float(breakdown["trade_count"]),
+        "leverage_p95": rng.uniform(0.8, 6.0), "top_coin_share": rng.uniform(0.3, 0.95),
+        "var_95": -sorted(r)[int(0.05 * (len(r) - 1))], "cvar_95": -sum(tail) / len(tail),
+        "time_in_market": rng.uniform(0.4, 1.0), "long_bias": rng.uniform(-0.6, 0.9),
+    }
+
+
+def scoring(leaders, details, rng):
+    """leader-scoring's summary and detail per leader (mock: three weighted metrics)."""
+    values = {l["address"]: curve_metrics(c, l["breakdown"], rng) for l, c in details}
+
+    def pct(name, x):
+        xs = [v[name] for v in values.values()]
+        p = (sum(y < x for y in xs) + (sum(y == x for y in xs) - 1) / 2) / (len(xs) - 1)
+        return 1 - p if name == "max_drawdown" else p
+
+    scores = {}
+    for addr, v in values.items():
+        comps = [{"metric": m, "label": next(lab for n, lab, _, _ in METRICS if n == m),
+                  "value": round(v[m], 6), "percentile": round(pct(m, v[m]), 6), "weight": w,
+                  "contribution": round(100 * w * pct(m, v[m]), 4)} for m, w in WEIGHTS.items()]
+        scores[addr] = (round(sum(c["contribution"] for c in comps), 2), comps)
+    order = sorted(scores, key=lambda a: -scores[a][0])
+    out = {}
+    for leader, curve in details:
+        addr = leader["address"]
+        v, (score, comps) = values[addr], scores[addr]
+        rank = order.index(addr) + 1
+        capacity = round(rng.uniform(2e4, 3e6), 2)
+        curve_pts = [{"follower_equity": x, "orders": 120,
+                      "mean_cost_bps": round(2 + 8 * x / capacity, 3),
+                      "median_cost_bps": round(1.5 + 7 * x / capacity, 3),
+                      "p90_cost_bps": round(4 + 14 * x / capacity, 3),
+                      "unfilled_share": round(max(0.0, min(1.0, (x / capacity - 1) * 0.3)), 4)}
+                     for x in (1e3, 1e4, 1e5, 1e6, 1e7)]
+        alerts = []
+        if v["max_drawdown"] > 0.25:
+            alerts.append({"kind": "drawdown_breach", "severity": "warning", "time": AS_OF - 3 * DAY,
+                           "message": f"{100 * v['max_drawdown']:.1f}% below the peak"})
+        if v["leverage_p95"] > 4:
+            alerts.append({"kind": "leverage_spike", "severity": "warning", "time": AS_OF - DAY,
+                           "message": f"leverage reached {v['leverage_p95'] * 1.6:.1f}x; baseline p95 {v['leverage_p95']:.1f}x"})
+        predicted = round(rng.gauss(0.1, 0.4), 4)
+        summary = {"score": score, "rank": rank, "percentile": round((len(order) - rank) / (len(order) - 1), 4),
+                   "eligible": True, "predicted_forward_sharpe": predicted, "capacity_usd": capacity,
+                   "alerts": len(alerts), "worst_alert": alerts[0]["severity"] if alerts else None,
+                   "sharpe": round(v["sharpe"], 6), "max_drawdown": round(v["max_drawdown"], 6),
+                   "leverage_p95": round(v["leverage_p95"], 6)}
+        detail = {"score": score, "rank": rank, "percentile": summary["percentile"], "eligible": True,
+                  "reasons": [], "components": comps, "predicted_forward_sharpe": predicted,
+                  "metrics": [{"name": n, "label": lab, "value": None if v[n] is None else round(v[n], 6),
+                               "unit": u, "better": b} for n, lab, u, b in METRICS],
+                  "equity_source": "venue", "bar_seconds": 86400.0, "equity_curve": curve,
+                  "capacity": {"max_cost_bps": 10.0, "capacity_usd": capacity, "curve": curve_pts,
+                               "coins_without_book": []},
+                  "alerts": alerts}
+        out[addr] = (summary, detail)
+    return out
+
+
 def main():
     rng = random.Random(7)
     leaders, details = [], []
@@ -113,11 +207,16 @@ def main():
     leaders.sort(key=lambda l: -l["score"])
     for rank, leader in enumerate(leaders, 1):
         leader["rank"] = rank
+    # a separate generator, so adding scoring left every other mock value unchanged
+    scored = scoring(leaders, details, random.Random(11))
+    for leader in leaders:
+        leader["scoring"] = scored[leader["address"]][0]
     write("leaders.json", {"as_of": AS_OF, "leaders": leaders})
     for leader, curve in details:
         write(f"leaders/{leader['address']}.json", {
             "leader": leader, "equity_curve": curve, "fills": fills(rng, 40),
             "positions": positions(rng, rng.randint(1, 3), leader["account_value"]),
+            "scoring": scored[leader["address"]][1],
         })
 
     me = address("fixture-follower")
