@@ -78,6 +78,7 @@ let%expect_test "optional fields accept null and are dropped when absent" =
     ; account_value = 410_000.
     ; window_pnl = { day = 1200.; week = 8000.; month = 31_000.; all_time = 125_000. }
     ; followers = 3
+    ; scoring = None
     }
   in
   round_trip (module Leader) leader;

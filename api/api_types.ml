@@ -101,6 +101,107 @@ module Window_pnl = struct
   [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
 end
 
+module Equity_point = struct
+  type t =
+    { time : Time_ms.t
+    ; equity : float
+    }
+  [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
+end
+
+module Scoring = struct
+  module Metric = struct
+    type t =
+      { name : string
+      ; label : string
+      ; value : float option [@default None]
+      ; unit : string
+      ; better : string
+      }
+    [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
+  end
+
+  module Component = struct
+    type t =
+      { metric : string
+      ; label : string
+      ; value : float option [@default None]
+      ; percentile : float
+      ; weight : float
+      ; contribution : float
+      }
+    [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
+  end
+
+  module Capacity_point = struct
+    type t =
+      { follower_equity : float
+      ; orders : int
+      ; mean_cost_bps : float
+      ; median_cost_bps : float
+      ; p90_cost_bps : float
+      ; unfilled_share : float
+      }
+    [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
+  end
+
+  module Capacity = struct
+    type t =
+      { max_cost_bps : float
+      ; capacity_usd : float option [@default None]
+      ; curve : Capacity_point.t list
+      ; coins_without_book : string list [@default []]
+      }
+    [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
+  end
+
+  module Alert = struct
+    type t =
+      { kind : string
+      ; severity : string
+      ; time : Time_ms.t
+      ; message : string
+      }
+    [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
+  end
+
+  module Summary = struct
+    type t =
+      { score : float
+      ; rank : int option [@default None]
+      ; percentile : float option [@default None]
+      ; eligible : bool
+      ; predicted_forward_sharpe : float option [@default None]
+      ; capacity_usd : float option [@default None]
+      ; alerts : int
+      ; worst_alert : string option [@default None]
+      ; sharpe : float option [@default None]
+      ; max_drawdown : float option [@default None]
+      ; leverage_p95 : float option [@default None]
+      }
+    [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
+  end
+
+  module Detail = struct
+    type t =
+      { score : float
+      ; rank : int option [@default None]
+      ; percentile : float option [@default None]
+      ; eligible : bool
+      ; reasons : string list [@default []]
+      ; components : Component.t list
+      ; predicted_forward_sharpe : float option [@default None]
+      ; metrics : Metric.t list
+      ; equity_source : string
+      ; bar_seconds : float
+      ; equity_curve : Equity_point.t list
+      ; capacity : Capacity.t option [@default None]
+      ; alerts : Alert.t list [@default []]
+      }
+    [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
+  end
+end
+
 module Leader = struct
   type t =
     { address : Address.t
@@ -111,6 +212,7 @@ module Leader = struct
     ; account_value : float
     ; window_pnl : Window_pnl.t
     ; followers : int
+    ; scoring : Scoring.Summary.t option [@default None] [@yojson_drop_if Option.is_none]
     }
   [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
 end
@@ -119,14 +221,6 @@ module Leaders_response = struct
   type t =
     { as_of : Time_ms.t
     ; leaders : Leader.t list
-    }
-  [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
-end
-
-module Equity_point = struct
-  type t =
-    { time : Time_ms.t
-    ; equity : float
     }
   [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
 end
@@ -162,6 +256,7 @@ module Leader_detail = struct
     ; equity_curve : Equity_point.t list
     ; fills : Fill.t list
     ; positions : Position.t list
+    ; scoring : Scoring.Detail.t option [@default None] [@yojson_drop_if Option.is_none]
     }
   [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
 end

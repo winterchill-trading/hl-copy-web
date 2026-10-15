@@ -66,6 +66,121 @@ module Window_pnl : sig
   [@@deriving compare, equal, sexp, yojson]
 end
 
+module Equity_point : sig
+  type t =
+    { time : Time_ms.t
+    ; equity : float (** USD account value *)
+    }
+  [@@deriving compare, equal, sexp, yojson]
+end
+
+(** leader-scoring's view of a leader (metrics, a transparent composite score, a
+    learned forecast, capacity and alerts), as hl-leaderboard computes it. Optional
+    numbers are [None] (JSON [null]) where a metric is undefined for the leader. *)
+module Scoring : sig
+  (** One metric. [unit] is ["ratio"] (show as a percentage), ["number"], ["count"],
+      ["days"], ["hours"], ["per_day"] or ["multiple"]; [better] is ["higher"],
+      ["lower"] or ["neither"]. *)
+  module Metric : sig
+    type t =
+      { name : string
+      ; label : string
+      ; value : float option
+      ; unit : string
+      ; better : string
+      }
+    [@@deriving compare, equal, sexp, yojson]
+  end
+
+  (** One weighted part of the composite score. *)
+  module Component : sig
+    type t =
+      { metric : string
+      ; label : string
+      ; value : float option
+      ; percentile : float (** [0.] to [1.], higher is better after flipping *)
+      ; weight : float (** weights sum to 1 *)
+      ; contribution : float (** points of the 0 to 100 score *)
+      }
+    [@@deriving compare, equal, sexp, yojson]
+  end
+
+  (** The estimated cost of copying every leader order at one follower size. *)
+  module Capacity_point : sig
+    type t =
+      { follower_equity : float (** USD *)
+      ; orders : int
+      ; mean_cost_bps : float (** notional-weighted *)
+      ; median_cost_bps : float
+      ; p90_cost_bps : float
+      ; unfilled_share : float (** share of notional the books could not fill *)
+      }
+    [@@deriving compare, equal, sexp, yojson]
+  end
+
+  module Capacity : sig
+    type t =
+      { max_cost_bps : float (** the cost that defines capacity *)
+      ; capacity_usd : float option (** largest follower equity within [max_cost_bps] *)
+      ; curve : Capacity_point.t list
+      ; coins_without_book : string list
+      }
+    [@@deriving compare, equal, sexp, yojson]
+  end
+
+  (** A behaviour change. [kind]: ["drawdown_breach"], ["leverage_spike"],
+      ["style_drift"], ["frequency_change"], ["liquidation"]; [severity]: ["info"],
+      ["warning"], ["critical"]. *)
+  module Alert : sig
+    type t =
+      { kind : string
+      ; severity : string
+      ; time : Time_ms.t
+      ; message : string
+      }
+    [@@deriving compare, equal, sexp, yojson]
+  end
+
+  (** What a leaderboard row carries. *)
+  module Summary : sig
+    type t =
+      { score : float (** composite, [0.] to [100.] *)
+      ; rank : int option (** among eligible leaders *)
+      ; percentile : float option
+      ; eligible : bool
+      ; predicted_forward_sharpe : float option
+      ; capacity_usd : float option
+      ; alerts : int
+      ; worst_alert : string option
+      ; sharpe : float option
+      ; max_drawdown : float option
+      ; leverage_p95 : float option
+      }
+    [@@deriving compare, equal, sexp, yojson]
+  end
+
+  (** What a leader page shows. *)
+  module Detail : sig
+    type t =
+      { score : float
+      ; rank : int option
+      ; percentile : float option
+      ; eligible : bool
+      ; reasons : string list (** why a leader is not ranked *)
+      ; components : Component.t list
+      ; predicted_forward_sharpe : float option
+      (** the learned model's forecast of the next 30 days' Sharpe ratio *)
+      ; metrics : Metric.t list
+      ; equity_source : string (** ["venue"], ["anchored"], ["given"] or ["assumed"] *)
+      ; bar_seconds : float (** the return period the metrics use *)
+      ; equity_curve : Equity_point.t list (** the series the metrics use, oldest first *)
+      ; capacity : Capacity.t option (** absent without order books *)
+      ; alerts : Alert.t list (** oldest first *)
+      }
+    [@@deriving compare, equal, sexp, yojson]
+  end
+end
+
 module Leader : sig
   type t =
     { address : Address.t
@@ -76,6 +191,7 @@ module Leader : sig
     ; account_value : float (** USD *)
     ; window_pnl : Window_pnl.t
     ; followers : int (** followers on this platform *)
+    ; scoring : Scoring.Summary.t option (** absent before hl-leaderboard scores it *)
     }
   [@@deriving compare, equal, sexp, yojson]
 end
@@ -85,14 +201,6 @@ module Leaders_response : sig
   type t =
     { as_of : Time_ms.t
     ; leaders : Leader.t list (** sorted by [rank] *)
-    }
-  [@@deriving compare, equal, sexp, yojson]
-end
-
-module Equity_point : sig
-  type t =
-    { time : Time_ms.t
-    ; equity : float (** USD account value *)
     }
   [@@deriving compare, equal, sexp, yojson]
 end
@@ -129,6 +237,7 @@ module Leader_detail : sig
     ; equity_curve : Equity_point.t list (** oldest first *)
     ; fills : Fill.t list (** newest first *)
     ; positions : Position.t list
+    ; scoring : Scoring.Detail.t option (** absent before hl-leaderboard scores it *)
     }
   [@@deriving compare, equal, sexp, yojson]
 end
