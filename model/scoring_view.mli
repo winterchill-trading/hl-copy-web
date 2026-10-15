@@ -1,19 +1,18 @@
-(** Display logic for the leader-scoring parts of the leader page: metric values in
-    their units, alert badges and the geometry of the capacity chart (follower size on a
-    log axis against the estimated cost in basis points). *)
+(** Display logic for the leader-scoring parts of the leader page: metric values in their
+    units, alert badges and the geometry of the capacity chart (follower size on a log
+    axis against the estimated cost in basis points). *)
 
 open! Core
 open Api_types
 
-(** A metric's value in its unit: ["12.3%"] for ratios, ["1.52"] for numbers, ["42"]
-    for counts, ["3.5 d"], ["7h 30m"], ["0.67 / day"], ["2.1x"]; ["-"] when undefined. *)
+(** A metric's value in its unit: ["12.3%"] for ratios, ["1.52"] for numbers, ["42"] for
+    counts, ["3.5 d"], ["7h 30m"], ["0.67 / day"], ["2.1x"]; ["-"] when undefined. *)
 val format_metric : Scoring.Metric.t -> string
 
 (** ["higher is better"], ["lower is better"] or [""]. *)
 val direction_hint : Scoring.Metric.t -> string
 
-(** CSS class of an alert severity: ["badge critical"], ["badge warning"],
-    ["badge info"]. *)
+(** CSS class of an alert severity: ["badge critical"], ["badge warning"], ["badge info"]. *)
 val severity_class : string -> string
 
 (** ["Drawdown breach"] from ["drawdown_breach"]. *)

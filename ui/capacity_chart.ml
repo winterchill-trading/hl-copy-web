@@ -13,7 +13,8 @@ let view ?(width = 720.) ?(height = 240.) capacity =
   | Some c ->
     let label ~x ~y ~anchor text =
       S.text
-        ~attrs:[ num "x" x; num "y" y; attr "text-anchor" anchor; attr "class" "axis-label" ]
+        ~attrs:
+          [ num "x" x; num "y" y; attr "text-anchor" anchor; attr "class" "axis-label" ]
         [ Vdom.Node.text text ]
     in
     let grid =
@@ -33,7 +34,11 @@ let view ?(width = 720.) ?(height = 240.) capacity =
     let sizes =
       List.mapi c.x_ticks ~f:(fun i t ->
         let anchor =
-          if i = 0 then "start" else if i = List.length c.x_ticks - 1 then "end" else "middle"
+          if i = 0
+          then "start"
+          else if i = List.length c.x_ticks - 1
+          then "end"
+          else "middle"
         in
         label ~x:t.at ~y:(c.plot_bottom +. 18.) ~anchor t.label)
     in

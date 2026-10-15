@@ -19,7 +19,8 @@ let%expect_test "metric values in their units" =
     ]
     ~f:(fun (unit, value) ->
       printf "%-8s %s\n" unit (Scoring_view.format_metric (metric unit value)));
-  [%expect {|
+  [%expect
+    {|
     ratio    12.3%
     number   1.52
     count    42
@@ -36,7 +37,8 @@ let%expect_test "labels and sizes" =
     printf "%s / %s\n" (Scoring_view.kind_label k) (Scoring_view.severity_class "warning"));
   List.iter [ 900.; 1_000.; 250_000.; 1_200_000.; 3e9 ] ~f:(fun x ->
     printf "%s\n" (Scoring_view.compact_usd x));
-  [%expect {|
+  [%expect
+    {|
     Drawdown breach / badge warning
     Leverage spike / badge warning
     Liquidation / badge warning
@@ -65,7 +67,10 @@ let%expect_test "capacity chart geometry" =
     ; coins_without_book = []
     }
   in
-  let c = Option.value_exn (Scoring_view.Capacity_chart.of_capacity capacity ~width:400. ~height:200.) in
+  let c =
+    Option.value_exn
+      (Scoring_view.Capacity_chart.of_capacity capacity ~width:400. ~height:200.)
+  in
   print_s
     [%message
       ""
@@ -73,13 +78,19 @@ let%expect_test "capacity chart geometry" =
           (* rounded: the x axis goes through log10, whose last bits differ between
              platform maths libraries *)
           (List.map c.line ~f:(fun (x, y) ->
-             Float.round_decimal x ~decimal_digits:2, Float.round_decimal y ~decimal_digits:2)
+             ( Float.round_decimal x ~decimal_digits:2
+             , Float.round_decimal y ~decimal_digits:2 ))
            : (float * float) list)
         ~x_ticks:(List.map c.x_ticks ~f:(fun t -> t.label) : string list)
         ~y_ticks:(List.map c.y_ticks ~f:(fun t -> t.label) : string list)
-        ~threshold_y:(Option.map c.threshold_y ~f:(Float.round_decimal ~decimal_digits:2) : float option)
-        ~capacity_x:(Option.map c.capacity_x ~f:(Float.round_decimal ~decimal_digits:2) : float option)];
-  [%expect {|
+        ~threshold_y:
+          (Option.map c.threshold_y ~f:(Float.round_decimal ~decimal_digits:2)
+           : float option)
+        ~capacity_x:
+          (Option.map c.capacity_x ~f:(Float.round_decimal ~decimal_digits:2)
+           : float option)];
+  [%expect
+    {|
     ((line ((60 171.85) (168 167.7) (276 134.5) (384 10)))
      (x_ticks ($1k $10k $100k $1M))
      (y_ticks ("0 bps" "10 bps" "20 bps" "30 bps" "40 bps"))
@@ -101,9 +112,12 @@ let%expect_test "every mock leader detail carries scoring that formats" =
       s.score
       (List.length s.metrics)
       (Option.is_some
-         (Option.bind s.capacity ~f:(Scoring_view.Capacity_chart.of_capacity ~width:400. ~height:200.)))
+         (Option.bind
+            s.capacity
+            ~f:(Scoring_view.Capacity_chart.of_capacity ~width:400. ~height:200.)))
       (List.length s.alerts));
-  [%expect {|
+  [%expect
+    {|
     0x288a5b score=64.3 metrics=14 capacity=true alerts=2
     0x3b0472 score=41.4 metrics=14 capacity=true alerts=1
     0x4d57c7 score=69.3 metrics=14 capacity=true alerts=0

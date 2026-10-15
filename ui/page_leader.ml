@@ -65,7 +65,8 @@ let fills_table (fills : Fill.t list) =
 
 let score_section (s : Scoring.Detail.t) =
   let pct_label =
-    Option.value_map s.percentile ~default:"-" ~f:(fun p -> sprintf "top %.0f%%" (100. *. (1. -. p)))
+    Option.value_map s.percentile ~default:"-" ~f:(fun p ->
+      sprintf "top %.0f%%" (100. *. (1. -. p)))
   in
   N.div
     ~attrs:[ A.id "leader-score" ]
@@ -87,7 +88,10 @@ let score_section (s : Scoring.Detail.t) =
         | reasons -> [ Widgets.notice ("Not ranked: " ^ String.concat ~sep:"; " reasons) ])
      @ [ Widgets.table
            ~attrs:[ A.id "score-components" ]
-           ~header:(List.map [ "Component"; "Value"; "Percentile"; "Weight"; "Points" ] ~f:N.text)
+           ~header:
+             (List.map
+                [ "Component"; "Value"; "Percentile"; "Weight"; "Points" ]
+                ~f:N.text)
            ~numeric:[ 1; 2; 3; 4 ]
            (List.map s.components ~f:(fun c ->
               let metric =
@@ -118,7 +122,9 @@ let metrics_table (s : Scoring.Detail.t) =
     (List.map s.metrics ~f:(fun m ->
        [ N.text m.label
        ; N.text (Scoring_view.format_metric m)
-       ; N.span ~attrs:[ A.class_ "metric-hint" ] [ N.text (Scoring_view.direction_hint m) ]
+       ; N.span
+           ~attrs:[ A.class_ "metric-hint" ]
+           [ N.text (Scoring_view.direction_hint m) ]
        ]))
 ;;
 
@@ -133,7 +139,9 @@ let capacity_section (s : Scoring.Detail.t) =
                (match c.capacity_usd with
                 | Some cap ->
                   sprintf
-                    "A follower up to about %s copies these orders at %s bps or less on                      average (book depth now, fees not included)."
+                    "A follower up to about %s copies these orders at %s bps or less \
+                     on                      average (book depth now, fees not \
+                     included)."
                     (Scoring_view.compact_usd cap)
                     (Format.number ~decimals:1 c.max_cost_bps)
                 | None -> "No order of this leader could be costed.")
@@ -168,7 +176,9 @@ let alerts_section (s : Scoring.Detail.t) =
       (List.rev alerts
        |> List.map ~f:(fun (a : Scoring.Alert.t) ->
          N.li
-           [ N.span ~attrs:[ A.class_ (Scoring_view.severity_class a.severity) ] [ N.text a.severity ]
+           [ N.span
+               ~attrs:[ A.class_ (Scoring_view.severity_class a.severity) ]
+               [ N.text a.severity ]
            ; N.strong [ N.text (Scoring_view.kind_label a.kind) ]
            ; N.span ~attrs:[ A.class_ "muted" ] [ N.text (Format.time_ms a.time) ]
            ; N.span [ N.text a.message ]
@@ -188,33 +198,33 @@ let scoring_sections (d : Leader_detail.t) =
 
 let view (d : Leader_detail.t) =
   [ Widgets.section
-        "Leader"
-        [ summary d.leader
-        ; N.div
-            ~attrs:[ A.class_ "actions" ]
-            [ Widgets.link
-                ~attrs:[ A.classes [ "btn"; "primary" ]; A.id "follow-button" ]
-                (Follow d.leader.address)
-                [ N.text "Follow this leader" ]
-            ]
-        ]
-    ; Widgets.section
-        "Equity"
-        [ window_pnl d.leader.window_pnl
-        ; Equity_chart.view
-            (* leader-scoring's series is the one its metrics use *)
-            (match d.scoring with
-             | Some s when List.length s.equity_curve >= 2 -> s.equity_curve
-             | _ -> d.equity_curve)
-        ]
-    ]
-    @ scoring_sections d
-    @ [ Widgets.section "Open positions" [ Widgets.positions_table d.positions ]
-      ; Widgets.section
-          (sprintf "Recent fills (latest %d)" (Int.min max_fills (List.length d.fills)))
-          [ fills_table d.fills ]
+      "Leader"
+      [ summary d.leader
+      ; N.div
+          ~attrs:[ A.class_ "actions" ]
+          [ Widgets.link
+              ~attrs:[ A.classes [ "btn"; "primary" ]; A.id "follow-button" ]
+              (Follow d.leader.address)
+              [ N.text "Follow this leader" ]
+          ]
       ]
-    |> N.div
+  ; Widgets.section
+      "Equity"
+      [ window_pnl d.leader.window_pnl
+      ; Equity_chart.view
+          (* leader-scoring's series is the one its metrics use *)
+          (match d.scoring with
+           | Some s when List.length s.equity_curve >= 2 -> s.equity_curve
+           | _ -> d.equity_curve)
+      ]
+  ]
+  @ scoring_sections d
+  @ [ Widgets.section "Open positions" [ Widgets.positions_table d.positions ]
+    ; Widgets.section
+        (sprintf "Recent fills (latest %d)" (Int.min max_fills (List.length d.fills)))
+        [ fills_table d.fills ]
+    ]
+  |> N.div
 ;;
 
 let component ~(backend : Backend.t) ~route (local_ graph) =

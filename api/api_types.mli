@@ -74,13 +74,13 @@ module Equity_point : sig
   [@@deriving compare, equal, sexp, yojson]
 end
 
-(** leader-scoring's view of a leader (metrics, a transparent composite score, a
-    learned forecast, capacity and alerts), as hl-leaderboard computes it. Optional
-    numbers are [None] (JSON [null]) where a metric is undefined for the leader. *)
+(** leader-scoring's view of a leader (metrics, a transparent composite score, a learned
+    forecast, capacity and alerts), as hl-leaderboard computes it. Optional numbers are
+    [None] (JSON [null]) where a metric is undefined for the leader. *)
 module Scoring : sig
   (** One metric. [unit] is ["ratio"] (show as a percentage), ["number"], ["count"],
-      ["days"], ["hours"], ["per_day"] or ["multiple"]; [better] is ["higher"],
-      ["lower"] or ["neither"]. *)
+      ["days"], ["hours"], ["per_day"] or ["multiple"]; [better] is ["higher"], ["lower"]
+      or ["neither"]. *)
   module Metric : sig
     type t =
       { name : string
