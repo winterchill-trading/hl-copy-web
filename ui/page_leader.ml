@@ -63,9 +63,131 @@ let fills_table (fills : Fill.t list) =
          ]))
 ;;
 
-let view (d : Leader_detail.t) =
+let score_section (s : Scoring.Detail.t) =
+  let pct_label =
+    Option.value_map s.percentile ~default:"-" ~f:(fun p -> sprintf "top %.0f%%" (100. *. (1. -. p)))
+  in
   N.div
-    [ Widgets.section
+    ~attrs:[ A.id "leader-score" ]
+    ([ Widgets.stats
+         [ Widgets.stat ~label:"Composite score" (N.textf "%.1f / 100" s.score)
+         ; Widgets.stat
+             ~label:"Rank"
+             (N.text (Option.value_map s.rank ~default:"unranked" ~f:(sprintf "#%d")))
+         ; Widgets.stat ~label:"Percentile" (N.text pct_label)
+         ; Widgets.stat
+             ~label:"Forecast (30d Sharpe)"
+             (match s.predicted_forward_sharpe with
+              | None -> N.text "-"
+              | Some p -> Widgets.signed p (sprintf "%+.2f" p))
+         ]
+     ]
+     @ (match s.reasons with
+        | [] -> []
+        | reasons -> [ Widgets.notice ("Not ranked: " ^ String.concat ~sep:"; " reasons) ])
+     @ [ Widgets.table
+           ~attrs:[ A.id "score-components" ]
+           ~header:(List.map [ "Component"; "Value"; "Percentile"; "Weight"; "Points" ] ~f:N.text)
+           ~numeric:[ 1; 2; 3; 4 ]
+           (List.map s.components ~f:(fun c ->
+              let metric =
+                List.find s.metrics ~f:(fun m -> String.equal m.name c.metric)
+                |> Option.value
+                     ~default:
+                       { Scoring.Metric.name = c.metric
+                       ; label = c.label
+                       ; value = c.value
+                       ; unit = "number"
+                       ; better = ""
+                       }
+              in
+              [ N.text c.label
+              ; N.text (Scoring_view.format_metric { metric with value = c.value })
+              ; N.text (Format.pct c.percentile)
+              ; N.text (Format.pct c.weight)
+              ; N.text (Format.number ~decimals:1 c.contribution)
+              ]))
+       ])
+;;
+
+let metrics_table (s : Scoring.Detail.t) =
+  Widgets.table
+    ~attrs:[ A.id "leader-metrics" ]
+    ~header:(List.map [ "Metric"; "Value"; "" ] ~f:N.text)
+    ~numeric:[ 1 ]
+    (List.map s.metrics ~f:(fun m ->
+       [ N.text m.label
+       ; N.text (Scoring_view.format_metric m)
+       ; N.span ~attrs:[ A.class_ "metric-hint" ] [ N.text (Scoring_view.direction_hint m) ]
+       ]))
+;;
+
+let capacity_section (s : Scoring.Detail.t) =
+  match s.capacity with
+  | None -> Widgets.notice "No order books were collected for this leader's coins."
+  | Some c ->
+    N.div
+      ~attrs:[ A.id "leader-capacity" ]
+      ([ N.p
+           [ N.text
+               (match c.capacity_usd with
+                | Some cap ->
+                  sprintf
+                    "A follower up to about %s copies these orders at %s bps or less on                      average (book depth now, fees not included)."
+                    (Scoring_view.compact_usd cap)
+                    (Format.number ~decimals:1 c.max_cost_bps)
+                | None -> "No order of this leader could be costed.")
+           ]
+       ; Capacity_chart.view c
+       ; Widgets.table
+           ~header:
+             (List.map
+                [ "Follower equity"; "Mean cost"; "Median"; "p90"; "Unfilled" ]
+                ~f:N.text)
+           ~numeric:[ 0; 1; 2; 3; 4 ]
+           (List.map c.curve ~f:(fun p ->
+              [ N.text (Format.usd p.follower_equity)
+              ; N.textf "%s bps" (Format.number ~decimals:2 p.mean_cost_bps)
+              ; N.textf "%s bps" (Format.number ~decimals:2 p.median_cost_bps)
+              ; N.textf "%s bps" (Format.number ~decimals:2 p.p90_cost_bps)
+              ; N.text (Format.pct p.unfilled_share)
+              ]))
+       ]
+       @
+       match c.coins_without_book with
+       | [] -> []
+       | coins -> [ Widgets.notice ("No book for " ^ String.concat ~sep:", " coins) ])
+;;
+
+let alerts_section (s : Scoring.Detail.t) =
+  match s.alerts with
+  | [] -> Widgets.notice "No behaviour changes detected."
+  | alerts ->
+    N.ul
+      ~attrs:[ A.class_ "alerts"; A.id "leader-alerts" ]
+      (List.rev alerts
+       |> List.map ~f:(fun (a : Scoring.Alert.t) ->
+         N.li
+           [ N.span ~attrs:[ A.class_ (Scoring_view.severity_class a.severity) ] [ N.text a.severity ]
+           ; N.strong [ N.text (Scoring_view.kind_label a.kind) ]
+           ; N.span ~attrs:[ A.class_ "muted" ] [ N.text (Format.time_ms a.time) ]
+           ; N.span [ N.text a.message ]
+           ]))
+;;
+
+let scoring_sections (d : Leader_detail.t) =
+  match d.scoring with
+  | None -> []
+  | Some s ->
+    [ Widgets.section "Leader score" [ score_section s ]
+    ; Widgets.section "Metrics" [ metrics_table s ]
+    ; Widgets.section "Capacity" [ capacity_section s ]
+    ; Widgets.section "Alerts" [ alerts_section s ]
+    ]
+;;
+
+let view (d : Leader_detail.t) =
+  [ Widgets.section
         "Leader"
         [ summary d.leader
         ; N.div
@@ -78,12 +200,21 @@ let view (d : Leader_detail.t) =
         ]
     ; Widgets.section
         "Equity"
-        [ window_pnl d.leader.window_pnl; Equity_chart.view d.equity_curve ]
-    ; Widgets.section "Open positions" [ Widgets.positions_table d.positions ]
-    ; Widgets.section
-        (sprintf "Recent fills (latest %d)" (Int.min max_fills (List.length d.fills)))
-        [ fills_table d.fills ]
+        [ window_pnl d.leader.window_pnl
+        ; Equity_chart.view
+            (* leader-scoring's series is the one its metrics use *)
+            (match d.scoring with
+             | Some s when List.length s.equity_curve >= 2 -> s.equity_curve
+             | _ -> d.equity_curve)
+        ]
     ]
+    @ scoring_sections d
+    @ [ Widgets.section "Open positions" [ Widgets.positions_table d.positions ]
+      ; Widgets.section
+          (sprintf "Recent fills (latest %d)" (Int.min max_fills (List.length d.fills)))
+          [ fills_table d.fills ]
+      ]
+    |> N.div
 ;;
 
 let component ~(backend : Backend.t) ~route (local_ graph) =
