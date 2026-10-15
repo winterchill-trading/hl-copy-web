@@ -106,6 +106,24 @@ async function main() {
   if (!document.querySelector("#follow-button")) fail("follow button missing");
   step("leader page draws a 91 point equity curve and the fills table");
 
+  // leader-scoring sections on the same page
+  // the fake DOM matches one simple selector at a time, so descend step by step
+  const bodyRows = (id) => {
+    const table = document.querySelector(id);
+    const tbody = table && table.querySelector("tbody");
+    return tbody ? tbody.querySelectorAll("tr") : [];
+  };
+  const metricRows = bodyRows("#leader-metrics");
+  if (metricRows.length !== 14) fail("expected 14 metric rows, got " + metricRows.length);
+  const components = bodyRows("#score-components");
+  if (components.length !== 3) fail("expected 3 score components, got " + components.length);
+  const chart = document.querySelector("#capacity-chart");
+  const cost = chart && chart.querySelector("polyline");
+  if (!cost || cost.getAttribute("points").split(" ").length !== 5) fail("capacity curve missing");
+  if (!bodyText().includes("Composite score")) fail("composite score missing");
+  if (!document.querySelector("#leader-alerts") && !bodyText().includes("No behaviour changes detected.")) fail("alerts section missing");
+  step("leader page shows the score components, 14 metrics, the capacity curve and alerts");
+
   // Dashboard before login
   location.hash = "#/dashboard";
   await waitFor("login prompt", () => bodyText().includes("Connect your wallet to see your follows."));
