@@ -34,6 +34,45 @@ module Command = struct
     | Stop
 end
 
+(* The engine's cost report for this follow: totals over the finished parent orders and
+   the latest few, when the engine reports them. *)
+let execution_view (e : Execution.t) =
+  N.div
+    ~attrs:[ A.class_ "execution" ]
+    [ Widgets.stats
+        [ Widgets.stat ~label:"Parents" (N.textf "%d (%d active)" e.parents e.active)
+        ; Widgets.stat ~label:"Fill rate" (N.text (Format.pct e.fill_rate))
+        ; Widgets.stat
+            ~label:"Shortfall"
+            (N.textf "%s bps" (Format.number ~decimals:1 e.shortfall_bps))
+        ; Widgets.stat
+            ~label:"Slippage"
+            (N.textf "%s bps" (Format.number ~decimals:1 e.slippage_bps))
+        ; Widgets.stat ~label:"Fees" (N.text (Format.usd e.fees))
+        ]
+    ; (match List.take e.recent 5 with
+       | [] -> N.none
+       | recent ->
+         Widgets.table
+           ~header:
+             (List.map
+                [ "Time (UTC)"; "Algo"; "Outcome"; "Side"; "Filled"; "Shortfall (bps)" ]
+                ~f:N.text)
+           ~numeric:[ 4; 5 ]
+           (List.map recent ~f:(fun (r : Execution_report.t) ->
+              [ N.text (Option.value_map r.time ~default:"-" ~f:Format.time_ms)
+              ; N.text r.algo
+              ; N.text r.outcome
+              ; N.text
+                  (match r.side with
+                   | Buy -> "buy"
+                   | Sell -> "sell")
+              ; N.textf "%s / %s" (Format.number r.filled) (Format.number r.target)
+              ; N.text (Format.number ~decimals:1 r.shortfall_bps)
+              ])))
+    ]
+;;
+
 let follow_card ~run (f : Follow.t) =
   let command c label = Widgets.button ~on_click:(run f.id c) label in
   let buttons =
@@ -56,7 +95,9 @@ let follow_card ~run (f : Follow.t) =
         [ Widgets.stat ~label:"PnL" (Widgets.usd_pnl f.pnl)
         ; Widgets.stat ~label:"Scale" (N.text (Scale_mode.to_string_hum f.scale))
         ; Widgets.stat ~label:"Caps" (N.text (caps_text f.caps))
+        ; Widgets.stat ~label:"Execution" (N.text (Algo_choice.describe f.algo))
         ]
+    ; Option.value_map f.execution ~default:N.none ~f:execution_view
     ; Widgets.positions_table f.positions
     ; N.div ~attrs:[ A.class_ "actions" ] buttons
     ]
