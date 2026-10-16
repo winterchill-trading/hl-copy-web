@@ -31,6 +31,8 @@ module Field = struct
     | Max_daily_loss
     | Allowlist
     | Min_order_notional
+    | Algo_seconds
+    | Algo_slices
   [@@deriving compare, enumerate, equal, sexp]
 
   let label = function
@@ -40,6 +42,8 @@ module Field = struct
     | Max_daily_loss -> "Max daily loss (USD)"
     | Allowlist -> "Coins to copy (empty = all)"
     | Min_order_notional -> "Min order notional (USD)"
+    | Algo_seconds -> "Algorithm duration or timeout (seconds)"
+    | Algo_slices -> "TWAP slices"
   ;;
 end
 
@@ -51,8 +55,20 @@ type t =
   ; max_daily_loss : string
   ; allowlist : string
   ; min_order_notional : string
+  ; algo : Algo_choice.Kind.t
+  ; algo_seconds : string
+  ; algo_slices : string
   }
 [@@deriving compare, equal, sexp]
+
+module Valid = struct
+  type t =
+    { scale : Scale_mode.t
+    ; caps : Caps.t
+    ; algo : string option
+    }
+  [@@deriving compare, equal, sexp]
+end
 
 let default =
   let c = Caps.default in
@@ -63,7 +79,24 @@ let default =
   ; max_daily_loss = sprintf "%g" c.max_daily_loss
   ; allowlist = String.concat ~sep:", " c.allowlist
   ; min_order_notional = sprintf "%g" c.min_order_notional
+  ; algo = Immediate
+  ; algo_seconds = ""
+  ; algo_slices = ""
   }
+;;
+
+let with_algo t (kind : Algo_choice.Kind.t) =
+  match kind with
+  | Immediate -> { t with algo = kind; algo_seconds = ""; algo_slices = "" }
+  | Twap | Adaptive | Passive ->
+    { t with
+      algo = kind
+    ; algo_seconds = Int.to_string (Algo_choice.Kind.default_seconds kind)
+    ; algo_slices =
+        (match kind with
+         | Twap -> Int.to_string Algo_choice.default_slices
+         | Immediate | Adaptive | Passive -> "")
+    }
 ;;
 
 let get t : Field.t -> string = function
@@ -73,6 +106,8 @@ let get t : Field.t -> string = function
   | Max_daily_loss -> t.max_daily_loss
   | Allowlist -> t.allowlist
   | Min_order_notional -> t.min_order_notional
+  | Algo_seconds -> t.algo_seconds
+  | Algo_slices -> t.algo_slices
 ;;
 
 let set t (field : Field.t) v =
@@ -83,6 +118,8 @@ let set t (field : Field.t) v =
   | Max_daily_loss -> { t with max_daily_loss = v }
   | Allowlist -> { t with allowlist = v }
   | Min_order_notional -> { t with min_order_notional = v }
+  | Algo_seconds -> { t with algo_seconds = v }
+  | Algo_slices -> { t with algo_slices = v }
 ;;
 
 let parse_allowlist s =
@@ -131,15 +168,35 @@ let validate t =
   (match List.filter allowlist ~f:(Fn.non valid_coin) with
    | [] -> ()
    | bad -> fail Allowlist ("not a coin: " ^ String.concat ~sep:", " bad));
+  let algo =
+    match t.algo with
+    | Immediate -> None
+    | Twap | Adaptive | Passive as kind ->
+      (* an hour bounds how long one leader change may take to copy *)
+      let seconds = number Algo_seconds ~lo:1. ~hi:3600. |> Float.iround_nearest_exn in
+      let slices =
+        match kind with
+        | Twap -> number Algo_slices ~lo:1. ~hi:100. |> Float.iround_nearest_exn
+        | Immediate | Adaptive | Passive -> 0
+      in
+      Algo_choice.to_wire kind ~seconds ~slices
+  in
   match List.rev !errors with
   | [] ->
     Ok
-      ( scale
-      , { Caps.max_leverage
-        ; max_notional_per_symbol
-        ; max_daily_loss
-        ; allowlist
-        ; min_order_notional
-        } )
+      { Valid.scale
+      ; caps =
+          { Caps.max_leverage
+          ; max_notional_per_symbol
+          ; max_daily_loss
+          ; allowlist
+          ; min_order_notional
+          }
+      ; algo
+      }
   | errors -> Error errors
+;;
+
+let request (v : Valid.t) ~leader =
+  { Follow_request.leader; scale = v.scale; caps = v.caps; algo = v.algo }
 ;;
