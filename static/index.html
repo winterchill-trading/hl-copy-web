@@ -116,6 +116,11 @@
       .badge.critical { color: var(--neg); border-color: var(--neg); }
       .badge.warning { color: #b45309; border-color: #b45309; }
       .badge.info { color: var(--muted); }
+      /* the ranking check above the leaders table: neutral when the ranking persists */
+      .notice.ok { background: transparent; border: 1px solid var(--line); }
+      .notice.warning { border-left: 3px solid #b45309; }
+      .notice p { margin: 4px 0; }
+      .execution { margin: 8px 0; }
       .alerts { list-style: none; padding: 0; margin: 0; }
       .alerts li { display: flex; gap: 8px; align-items: baseline; padding: 6px 0; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
       .metric-hint { color: var(--muted); font-size: 12px; }
