@@ -48,7 +48,13 @@ What a visitor sees, page by page:
   count, average hold time, consistency and equity. Gains are green, losses red. Clicking
   a column header sorts by it, best first, and clicking again flips the order; an arrow
   marks the sorted column. A line above the table says how many leaders match and when
-  the ranking was computed.
+  the ranking was computed. Above the filters, when hl-leaderboard ran its universe
+  checks, a **ranking check** says whether the order persists from one window to the
+  next (the rank correlation with its 95% interval and how the top picks did against
+  random picks) and, when it does not, that the order is noise rather than a list of the
+  best; it also gives the probability of backtest overfitting and how many leaders pass
+  the statistical gate or were flagged. A leader with integrity flags carries a badge
+  under its name.
 - **Leader** (`#/leader/<address>`). The leader's name and full address with eleven
   headline figures (rank, score, equity, pnl, ROI, drawdown, win rate, trades, average
   hold, consistency, followers), a "Follow this leader" button, 24 hour, 7 day, 30 day and
@@ -65,11 +71,20 @@ What a visitor sees, page by page:
   units, with which direction is better), **Capacity** (the follower size up to which
   copying costs at most the threshold, an SVG of the mean cost against follower size on a
   log axis with the threshold and the capacity marked, and the cost table at 1k to 10M
-  USD) and **Alerts** (newest first, with severity badges).
+  USD) and **Alerts** (newest first, with severity badges). With the universe checks
+  three more appear: **Integrity** (each flag with its severity, what it found and the
+  other accounts involved, or a line saying nothing was found), **Persistence** (ranking
+  windows, mean percentile, windows in the top fifth, the universe's rank correlation,
+  and whether a high percentile means anything here) and **Selection statistics** (PSR,
+  DSR, annualized Sharpe, the track record needed for 95% confidence, the universe's PBO
+  and SPA p-value, and the statistical gate's verdict).
 - **Follow** (`#/follow/<address>`). The leader summary, then a form: scale mode (equity
   ratio, a fixed multiplier, or a fixed USD notional per position) with its value, max
-  leverage, max notional per symbol, max daily loss, minimum order notional and the coins
-  to copy. Invalid fields turn red with a message under them and the button stays
+  leverage, max notional per symbol, max daily loss, minimum order notional, the coins
+  to copy, and the execution: Immediate (one IOC order per change, the default), TWAP
+  (duration and slices, 60 s in 6 by default), Adaptive (timeout, 20 s) or Passive
+  (timeout, 30 s), sent as execution-algos' short form (`twap:60s:6`); immediate sends no
+  `algo` at all. Invalid fields turn red with a message under them and the button stays
   disabled. A line under the form says which agent state applies. With an approved agent
   the button just says "Follow". Otherwise it says "Review agent approval" and leads to a
   second step that prints the exact `approveAgent` EIP-712 typed data the wallet will
@@ -79,7 +94,9 @@ What a visitor sees, page by page:
 - **Dashboard** (`#/dashboard`). Account address, equity, total copy pnl and how many
   follows are running; a notice when the agent is missing or its approval expired; then
   one card per follow with the leader, a running, paused or stopped badge, start time,
-  attributed pnl, scale, caps and the positions it opened, with Pause, Resume and Stop
+  attributed pnl, scale, caps, the execution algorithm, the engine's cost report when it
+  has one (parents, fill rate, shortfall and slippage in bps, fees, and the last five
+  finished parents) and the positions it opened, with Pause, Resume and Stop
   buttons as the state allows.
 - **Connect wallet** (`#/login`). One paragraph on what signing in means, "Connect wallet"
   and (with mock data) "Use demo signer", and progress or error lines underneath.
