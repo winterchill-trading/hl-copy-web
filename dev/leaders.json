@@ -34,7 +34,10 @@
         "worst_alert": null,
         "sharpe": 2.839943,
         "max_drawdown": 0.137982,
-        "leverage_p95": 1.618969
+        "leverage_p95": 1.618969,
+        "persistence_percentile": 0.7396,
+        "psr": 0.5551,
+        "dsr": 0.96
       }
     },
     {
@@ -70,7 +73,10 @@
         "worst_alert": "warning",
         "sharpe": 3.735787,
         "max_drawdown": 0.25193,
-        "leverage_p95": 5.907406
+        "leverage_p95": 5.907406,
+        "persistence_percentile": 0.4652,
+        "psr": 0.4881,
+        "dsr": 0.055
       }
     },
     {
@@ -106,7 +112,10 @@
         "worst_alert": null,
         "sharpe": 1.589818,
         "max_drawdown": 0.067688,
-        "leverage_p95": 3.090762
+        "leverage_p95": 3.090762,
+        "persistence_percentile": 0.2995,
+        "psr": 0.6585,
+        "dsr": 0.2758
       }
     },
     {
@@ -134,14 +143,21 @@
         "score": 51.43,
         "rank": 5,
         "percentile": 0.4286,
-        "eligible": true,
+        "eligible": false,
         "predicted_forward_sharpe": -0.277,
         "capacity_usd": 848925.44,
         "alerts": 0,
         "worst_alert": null,
         "sharpe": 1.776142,
         "max_drawdown": 0.10894,
-        "leverage_p95": 3.440775
+        "leverage_p95": 3.440775,
+        "integrity_flags": [
+          "co_trading"
+        ],
+        "excluded": true,
+        "persistence_percentile": 0.8402,
+        "psr": 0.885,
+        "dsr": 0.3567
       }
     },
     {
@@ -176,7 +192,10 @@
         "worst_alert": null,
         "sharpe": 2.296608,
         "max_drawdown": 0.085835,
-        "leverage_p95": 1.789083
+        "leverage_p95": 1.789083,
+        "persistence_percentile": 0.5829,
+        "psr": 0.9091,
+        "dsr": 0.2213
       }
     },
     {
@@ -212,7 +231,10 @@
         "worst_alert": "warning",
         "sharpe": -0.060273,
         "max_drawdown": 0.277318,
-        "leverage_p95": 3.152374
+        "leverage_p95": 3.152374,
+        "persistence_percentile": 0.8679,
+        "psr": 0.5879,
+        "dsr": 0.0345
       }
     },
     {
@@ -247,7 +269,10 @@
         "worst_alert": null,
         "sharpe": -0.368848,
         "max_drawdown": 0.21582,
-        "leverage_p95": 1.271487
+        "leverage_p95": 1.271487,
+        "persistence_percentile": 0.4323,
+        "psr": 0.8483,
+        "dsr": 0.0572
       }
     },
     {
@@ -283,8 +308,65 @@
         "worst_alert": "warning",
         "sharpe": -1.746421,
         "max_drawdown": 0.299665,
-        "leverage_p95": 4.07539
+        "leverage_p95": 4.07539,
+        "persistence_percentile": 0.3774,
+        "psr": 0.5517,
+        "dsr": 0.1267
       }
     }
-  ]
+  ],
+  "universe": {
+    "persistent": false,
+    "fading": false,
+    "formation": "sharpe",
+    "window_days": 30.0,
+    "periods": 9,
+    "rank_correlation": 0.04,
+    "rank_correlation_lower": -0.05,
+    "rank_correlation_upper": 0.13,
+    "top_stays_top_half": 0.5,
+    "decay": [
+      0.04,
+      0.03,
+      null
+    ],
+    "transition": [
+      [
+        0.25,
+        0.25,
+        0.25,
+        0.25
+      ],
+      [
+        0.25,
+        0.25,
+        0.25,
+        0.25
+      ],
+      [
+        0.25,
+        0.25,
+        0.25,
+        0.25
+      ],
+      [
+        0.25,
+        0.25,
+        0.25,
+        0.25
+      ]
+    ],
+    "top_k": 3,
+    "top_k_return": 0.021,
+    "random_mean": 0.019,
+    "baseline_percentile": 0.56,
+    "baseline_p_value": 0.44,
+    "leaders_with_stats": 8,
+    "trials": 8,
+    "pbo": 0.38,
+    "spa_p_value": 0.31,
+    "accepted": 1,
+    "flagged": 1,
+    "excluded": 1
+  }
 }

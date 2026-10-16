@@ -32,7 +32,10 @@
       "worst_alert": null,
       "sharpe": 2.839943,
       "max_drawdown": 0.137982,
-      "leverage_p95": 1.618969
+      "leverage_p95": 1.618969,
+      "persistence_percentile": 0.7396,
+      "psr": 0.5551,
+      "dsr": 0.96
     }
   },
   "equity_curve": [
@@ -1367,6 +1370,39 @@
       ],
       "coins_without_book": []
     },
-    "alerts": []
+    "alerts": [],
+    "persistence": {
+      "windows": 3,
+      "mean_percentile": 0.7396,
+      "top_quantile_windows": 1,
+      "percentiles": [
+        {
+          "time": 1757665800000,
+          "percentile": 0.6853
+        },
+        {
+          "time": 1755073800000,
+          "percentile": 0.6841
+        },
+        {
+          "time": 1752481800000,
+          "percentile": 0.8493
+        }
+      ],
+      "universe_persistent": false,
+      "universe_rank_correlation": 0.04
+    },
+    "stats": {
+      "periods": 90,
+      "periods_per_year": 365.25,
+      "sharpe_annualized": 0.15,
+      "psr": 0.5551,
+      "dsr": 0.96,
+      "min_track_record_periods": 238,
+      "pbo": 0.38,
+      "spa_p_value": 0.31,
+      "accepted": true,
+      "reasons": []
+    }
   }
 }

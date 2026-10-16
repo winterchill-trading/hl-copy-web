@@ -32,7 +32,10 @@
       "worst_alert": "warning",
       "sharpe": -0.060273,
       "max_drawdown": 0.277318,
-      "leverage_p95": 3.152374
+      "leverage_p95": 3.152374,
+      "persistence_percentile": 0.8679,
+      "psr": 0.5879,
+      "dsr": 0.0345
     }
   },
   "equity_curve": [
@@ -1367,6 +1370,41 @@
         "time": 1759998600000,
         "message": "27.7% below the peak"
       }
-    ]
+    ],
+    "persistence": {
+      "windows": 3,
+      "mean_percentile": 0.8679,
+      "top_quantile_windows": 2,
+      "percentiles": [
+        {
+          "time": 1757665800000,
+          "percentile": 0.8196
+        },
+        {
+          "time": 1755073800000,
+          "percentile": 0.7983
+        },
+        {
+          "time": 1752481800000,
+          "percentile": 0.9857
+        }
+      ],
+      "universe_persistent": false,
+      "universe_rank_correlation": 0.04
+    },
+    "stats": {
+      "periods": 90,
+      "periods_per_year": 365.25,
+      "sharpe_annualized": 1.9182,
+      "psr": 0.5879,
+      "dsr": 0.0345,
+      "min_track_record_periods": 517,
+      "pbo": 0.38,
+      "spa_p_value": 0.31,
+      "accepted": false,
+      "reasons": [
+        "deflated Sharpe ratio 0.03 below 0.95"
+      ]
+    }
   }
 }

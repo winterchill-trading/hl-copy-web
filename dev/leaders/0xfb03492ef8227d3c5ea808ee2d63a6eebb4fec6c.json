@@ -24,14 +24,21 @@
       "score": 51.43,
       "rank": 5,
       "percentile": 0.4286,
-      "eligible": true,
+      "eligible": false,
       "predicted_forward_sharpe": -0.277,
       "capacity_usd": 848925.44,
       "alerts": 0,
       "worst_alert": null,
       "sharpe": 1.776142,
       "max_drawdown": 0.10894,
-      "leverage_p95": 3.440775
+      "leverage_p95": 3.440775,
+      "integrity_flags": [
+        "co_trading"
+      ],
+      "excluded": true,
+      "persistence_percentile": 0.8402,
+      "psr": 0.885,
+      "dsr": 0.3567
     }
   },
   "equity_curve": [
@@ -815,8 +822,10 @@
     "score": 51.43,
     "rank": 5,
     "percentile": 0.4286,
-    "eligible": true,
-    "reasons": [],
+    "eligible": false,
+    "reasons": [
+      "integrity: trades in step with 2 other watched accounts (cluster of 3)"
+    ],
     "components": [
       {
         "metric": "sharpe",
@@ -1359,6 +1368,52 @@
       ],
       "coins_without_book": []
     },
-    "alerts": []
+    "alerts": [],
+    "persistence": {
+      "windows": 3,
+      "mean_percentile": 0.8402,
+      "top_quantile_windows": 2,
+      "percentiles": [
+        {
+          "time": 1757665800000,
+          "percentile": 0.8264
+        },
+        {
+          "time": 1755073800000,
+          "percentile": 0.7448
+        },
+        {
+          "time": 1752481800000,
+          "percentile": 0.9493
+        }
+      ],
+      "universe_persistent": false,
+      "universe_rank_correlation": 0.04
+    },
+    "stats": {
+      "periods": 90,
+      "periods_per_year": 365.25,
+      "sharpe_annualized": 2.2782,
+      "psr": 0.885,
+      "dsr": 0.3567,
+      "min_track_record_periods": 261,
+      "pbo": 0.38,
+      "spa_p_value": 0.31,
+      "accepted": false,
+      "reasons": [
+        "deflated Sharpe ratio 0.36 below 0.95"
+      ]
+    },
+    "integrity": [
+      {
+        "kind": "co_trading",
+        "severity": "critical",
+        "message": "trades in step with 2 other watched accounts (cluster of 3)",
+        "accounts": [
+          "0x4d57c7408c19e3a4d7fbbfc2f11dbc4be3dbe478",
+          "0x3b047266d543bf18fdd2fc4ef6fcdc8bba698fbf"
+        ]
+      }
+    ]
   }
 }
