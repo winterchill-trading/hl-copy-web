@@ -12,7 +12,8 @@ let show form =
 let%expect_test "defaults validate to Caps.default" =
   print_s [%sexp (Follow_form.default : Follow_form.t)];
   (match Follow_form.validate Follow_form.default with
-   | Ok { scale = Equity_ratio; caps; algo = None } -> assert (Caps.equal caps Caps.default)
+   | Ok { scale = Equity_ratio; caps; algo = None } ->
+     assert (Caps.equal caps Caps.default)
    | _ -> assert false);
   [%expect
     {|
@@ -64,7 +65,8 @@ let%expect_test "execution algorithms: wire form, defaults and bounds" =
   List.iter
     [ None; Some "twap:300s:10"; Some "adaptive:20s"; Some "passive:30s"; Some "pov" ]
     ~f:(fun a -> print_endline (Algo_choice.describe a));
-  [%expect {|
+  [%expect
+    {|
     (Ok
      ((scale Equity_ratio)
       (caps

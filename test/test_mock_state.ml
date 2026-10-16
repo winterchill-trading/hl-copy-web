@@ -61,7 +61,9 @@ let%expect_test "pause, resume and stop" =
 
 let%expect_test "following needs an active agent" =
   let leader = (List.hd_exn (Fixtures.leaders ())).address in
-  let request = { Follow_request.leader; scale = Multiplier 0.5; caps = Caps.default; algo = None } in
+  let request =
+    { Follow_request.leader; scale = Multiplier 0.5; caps = Caps.default; algo = None }
+  in
   (match Mock_state.add_follow (me ()) request ~now:a_week_later with
    | Ok _ -> print_endline "followed without an agent"
    | Error e -> print_s [%sexp (e : Error.t)]);

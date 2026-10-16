@@ -186,12 +186,13 @@ let%expect_test "persistence verdicts and the statistical gate" =
     }
   in
   print_endline (Scoring_view.stats_verdict stats);
-  print_endline (Scoring_view.stats_verdict { stats with accepted = Some true; reasons = [] });
+  print_endline
+    (Scoring_view.stats_verdict { stats with accepted = Some true; reasons = [] });
   print_endline (Scoring_view.probability stats.psr);
-  List.iter
-    [ "wash_trade"; "co_trading"; "off_book_price"; "something_new" ]
-    ~f:(fun k -> print_endline (Scoring_view.integrity_label k));
-  [%expect {|
+  List.iter [ "wash_trade"; "co_trading"; "off_book_price"; "something_new" ] ~f:(fun k ->
+    print_endline (Scoring_view.integrity_label k));
+  [%expect
+    {|
     Rank correlation from one window to the next (30-day windows): 0.05 (95% interval -0.03 to 0.12) over 10 periods. The top 10 returned 33.7% in the next window against 33.8% for random picks (better than 48% of random draws). The ranking does not persist: treat the order as noise, not as a list of the best leaders.
     Rank correlation from one window to the next (30-day windows): 0.05 (95% interval 0.03 to 0.12) over 10 periods. The top 10 returned 33.7% in the next window against 33.8% for random picks (better than 48% of random draws). The ranking persists: past leaders tend to stay ahead.
     Not enough history to test the ranking (30-day windows). The ranking does not persist: treat the order as noise, not as a list of the best leaders.
