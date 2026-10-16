@@ -63,9 +63,13 @@ let trader_cell (l : Leader.t) =
                ~attrs:
                  [ A.class_ "badge warning"
                  ; A.title
-                     (String.concat ~sep:", " (List.map kinds ~f:Scoring_view.integrity_label))
+                     (String.concat
+                        ~sep:", "
+                        (List.map kinds ~f:Scoring_view.integrity_label))
                  ]
-               [ N.textf "%d integrity flag%s" (List.length kinds)
+               [ N.textf
+                   "%d integrity flag%s"
+                   (List.length kinds)
                    (if List.length kinds = 1 then "" else "s")
                ]
            ])
@@ -90,7 +94,9 @@ let universe_banner (u : Scoring.Universe.t option) =
       ; N.p
           ~attrs:[ A.class_ "muted" ]
           [ N.textf
-              "Probability of backtest overfitting %s; %d of %d leaders pass the                statistical gate; %d flagged by the integrity checks, %d left out of the                ranking."
+              "Probability of backtest overfitting %s; %d of %d leaders pass \
+               the                statistical gate; %d flagged by the integrity checks, \
+               %d left out of the                ranking."
               (Scoring_view.probability u.pbo)
               u.accepted
               u.leaders_with_stats

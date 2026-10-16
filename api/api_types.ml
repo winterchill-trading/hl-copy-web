@@ -183,8 +183,10 @@ module Scoring = struct
       ; excluded : bool [@yojson.default false] [@yojson_drop_if not] [@sexp.bool]
       ; persistence_percentile : float option
            [@yojson.default None] [@yojson_drop_if Option.is_none] [@sexp.option]
-      ; psr : float option [@yojson.default None] [@yojson_drop_if Option.is_none] [@sexp.option]
-      ; dsr : float option [@yojson.default None] [@yojson_drop_if Option.is_none] [@sexp.option]
+      ; psr : float option
+           [@yojson.default None] [@yojson_drop_if Option.is_none] [@sexp.option]
+      ; dsr : float option
+           [@yojson.default None] [@yojson_drop_if Option.is_none] [@sexp.option]
       }
     [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
   end
@@ -194,7 +196,8 @@ module Scoring = struct
       { kind : string
       ; severity : string
       ; message : string
-      ; accounts : string list [@yojson.default []] [@yojson_drop_if List.is_empty] [@sexp.list]
+      ; accounts : string list
+           [@yojson.default []] [@yojson_drop_if List.is_empty] [@sexp.list]
       }
     [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
   end
@@ -281,7 +284,8 @@ module Scoring = struct
       ; alerts : Alert.t list [@default []]
       ; persistence : Persistence.t option
            [@yojson.default None] [@yojson_drop_if Option.is_none] [@sexp.option]
-      ; stats : Stats.t option [@yojson.default None] [@yojson_drop_if Option.is_none] [@sexp.option]
+      ; stats : Stats.t option
+           [@yojson.default None] [@yojson_drop_if Option.is_none] [@sexp.option]
       ; integrity : Integrity_flag.t list
            [@yojson.default []] [@yojson_drop_if List.is_empty] [@sexp.list]
       }
@@ -590,7 +594,8 @@ module Follow_request = struct
     { leader : Address.t
     ; scale : Scale_mode.t
     ; caps : Caps.t
-    ; algo : string option [@yojson.default None] [@yojson_drop_if Option.is_none] [@sexp.option]
+    ; algo : string option
+         [@yojson.default None] [@yojson_drop_if Option.is_none] [@sexp.option]
     }
   [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
 end
@@ -663,7 +668,8 @@ module Follow = struct
     ; created_at : Time_ms.t
     ; pnl : float
     ; positions : Position.t list
-    ; algo : string option [@yojson.default None] [@yojson_drop_if Option.is_none] [@sexp.option]
+    ; algo : string option
+         [@yojson.default None] [@yojson_drop_if Option.is_none] [@sexp.option]
     ; execution : Execution.t option
          [@yojson.default None] [@yojson_drop_if Option.is_none] [@sexp.option]
     }
@@ -674,7 +680,8 @@ module Follow_update = struct
   type t =
     { state : Follow_state.t option
          [@yojson.default None] [@yojson_drop_if Option.is_none] [@sexp.option]
-    ; algo : string option [@yojson.default None] [@yojson_drop_if Option.is_none] [@sexp.option]
+    ; algo : string option
+         [@yojson.default None] [@yojson_drop_if Option.is_none] [@sexp.option]
     }
   [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
 end

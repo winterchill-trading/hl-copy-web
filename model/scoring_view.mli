@@ -59,6 +59,6 @@ val ranking_is_meaningful : Scoring.Universe.t option -> bool
     literature writes them. *)
 val probability : float option -> string
 
-(** One sentence on the statistical gate: ["passes: PSR and DSR at least 0.95, PBO at most
-    0.5"] or the reasons it fails. *)
+(** One sentence on the statistical gate:
+    ["passes: PSR and DSR at least 0.95, PBO at most 0.5"] or the reasons it fails. *)
 val stats_verdict : Scoring.Stats.t -> string

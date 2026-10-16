@@ -190,7 +190,9 @@ let integrity_section (s : Scoring.Detail.t) =
   | [] ->
     N.div
       ~attrs:[ A.id "leader-integrity" ]
-      [ Widgets.notice "No sign of wash trading, coordinated accounts or off-market fills." ]
+      [ Widgets.notice
+          "No sign of wash trading, coordinated accounts or off-market fills."
+      ]
   | flags ->
     N.ul
       ~attrs:[ A.class_ "alerts"; A.id "leader-integrity" ]
@@ -226,20 +228,28 @@ let persistence_section (p : Scoring.Persistence.t) =
         ; Widgets.stat
             ~label:"Mean percentile"
             (N.text (Option.value_map p.mean_percentile ~default:"-" ~f:Format.pct))
-        ; Widgets.stat ~label:"Windows in the top fifth" (N.textf "%d" p.top_quantile_windows)
+        ; Widgets.stat
+            ~label:"Windows in the top fifth"
+            (N.textf "%d" p.top_quantile_windows)
         ; Widgets.stat
             ~label:"Universe rank correlation"
             (N.text
-               (Option.value_map p.universe_rank_correlation ~default:"-" ~f:(sprintf "%.2f")))
+               (Option.value_map
+                  p.universe_rank_correlation
+                  ~default:"-"
+                  ~f:(sprintf "%.2f")))
         ]
     ; N.p
         ~attrs:[ A.class_ "muted" ]
         [ N.text
             (if p.universe_persistent
              then
-               "Rankings in this universe persist from one window to the next, so a                 leader's past percentile says something about the next window."
+               "Rankings in this universe persist from one window to the next, so \
+                a                 leader's past percentile says something about the next \
+                window."
              else
-               "Rankings in this universe do not persist from one window to the next: a                 high percentile here is not evidence of skill.")
+               "Rankings in this universe do not persist from one window to the next: \
+                a                 high percentile here is not evidence of skill.")
         ]
     ]
 ;;

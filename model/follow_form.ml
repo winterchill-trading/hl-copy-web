@@ -171,7 +171,7 @@ let validate t =
   let algo =
     match t.algo with
     | Immediate -> None
-    | Twap | Adaptive | Passive as kind ->
+    | (Twap | Adaptive | Passive) as kind ->
       (* an hour bounds how long one leader change may take to copy *)
       let seconds = number Algo_seconds ~lo:1. ~hi:3600. |> Float.iround_nearest_exn in
       let slices =

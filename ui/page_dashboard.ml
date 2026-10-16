@@ -170,8 +170,13 @@ let component ~(backend : Backend.t) ~route ~session (local_ graph) =
       (match%bind
          Effect.of_deferred_thunk (fun () ->
            match (command : Command.t) with
-           | Pause -> backend.update_follow ~token:s.token ~id { state = Some Paused; algo = None }
-           | Resume -> backend.update_follow ~token:s.token ~id { state = Some Running; algo = None }
+           | Pause ->
+             backend.update_follow ~token:s.token ~id { state = Some Paused; algo = None }
+           | Resume ->
+             backend.update_follow
+               ~token:s.token
+               ~id
+               { state = Some Running; algo = None }
            | Stop -> backend.stop_follow ~token:s.token ~id)
        with
        | Ok (_ : Follow.t) ->

@@ -170,8 +170,8 @@ let persistence_verdict (u : Scoring.Universe.t) =
     match u.top_k, u.top_k_return, u.random_mean, u.baseline_percentile with
     | Some k, Some top, Some random, Some pct ->
       sprintf
-        " The top %d returned %s in the next window against %s for random picks \
-         (better than %.0f%% of random draws)."
+        " The top %d returned %s in the next window against %s for random picks (better \
+         than %.0f%% of random draws)."
         k
         (Format.pct top)
         (Format.pct random)
@@ -192,8 +192,10 @@ let persistence_verdict (u : Scoring.Universe.t) =
 
 let stats_verdict (s : Scoring.Stats.t) =
   match s.accepted, s.reasons with
-  | Some true, _ -> "Passes the statistical gate (PSR and DSR at least 0.95, PBO at most 0.5)."
-  | Some false, (_ :: _ as reasons) -> "Fails the statistical gate: " ^ String.concat ~sep:"; " reasons ^ "."
+  | Some true, _ ->
+    "Passes the statistical gate (PSR and DSR at least 0.95, PBO at most 0.5)."
+  | Some false, (_ :: _ as reasons) ->
+    "Fails the statistical gate: " ^ String.concat ~sep:"; " reasons ^ "."
   | Some false, [] -> "Fails the statistical gate."
   | None, _ -> "No statistical gate was applied."
 ;;

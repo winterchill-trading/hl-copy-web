@@ -74,8 +74,8 @@ let algo_select ~(form : Follow_form.t) ~set_form =
            N.option
              ~attrs:
                (A.value (Algo_choice.Kind.to_string kind)
-                ::
-                (if Algo_choice.Kind.equal kind form.algo then [ A.selected ] else []))
+                :: (if Algo_choice.Kind.equal kind form.algo then [ A.selected ] else [])
+               )
              [ N.text (Algo_choice.Kind.label kind) ]))
     ; N.span ~attrs:[ A.class_ "muted" ] [ N.text (Algo_choice.Kind.help form.algo) ]
     ]

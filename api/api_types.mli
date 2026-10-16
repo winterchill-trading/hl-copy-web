@@ -237,7 +237,8 @@ module Scoring : sig
       ; top_stays_top_half : float option
       ; decay : float option list (** mean rank correlation 1, 2, ... windows ahead *)
       ; transition : float list list
-      (** row [i]: shares of formation quintile [i] (bottom first) in each outcome quintile *)
+      (** row [i]: shares of formation quintile [i] (bottom first) in each outcome
+          quintile *)
       ; top_k : int option
       ; top_k_return : float option
       ; random_mean : float option
@@ -521,8 +522,8 @@ module Follow_state : sig
   val to_string : t -> string
 end
 
-(** One parent order the engine finished, from its [/status]. [shortfall_bps] is the
-    cost against the price when the order was planned, fees included. *)
+(** One parent order the engine finished, from its [/status]. [shortfall_bps] is the cost
+    against the price when the order was planned, fees included. *)
 module Execution_report : sig
   type t =
     { time : Time_ms.t option
@@ -575,8 +576,8 @@ module Follow : sig
 end
 
 (** [PATCH /follows/<id>]: pause ([Paused]) or resume ([Running]) and/or change the
-    execution algorithm (["immediate"] goes back to the default); the reply is the
-    updated {!Follow.t}. [DELETE /follows/<id>] stops a follow for good. *)
+    execution algorithm (["immediate"] goes back to the default); the reply is the updated
+    {!Follow.t}. [DELETE /follows/<id>] stops a follow for good. *)
 module Follow_update : sig
   type t =
     { state : Follow_state.t option
