@@ -41,11 +41,11 @@ let%expect_test "pause, resume and stop" =
       states !me
     | Error e -> print_s [%sexp (e : Error.t)]
   in
-  show (Mock_state.update_follow !me ~id:"f-1" { state = Paused });
-  show (Mock_state.update_follow !me ~id:"f-1" { state = Paused });
-  show (Mock_state.update_follow !me ~id:"f-2" { state = Running });
+  show (Mock_state.update_follow !me ~id:"f-1" { state = Some Paused; algo = None });
+  show (Mock_state.update_follow !me ~id:"f-1" { state = Some Paused; algo = None });
+  show (Mock_state.update_follow !me ~id:"f-2" { state = Some Running; algo = None });
   show (Mock_state.stop_follow !me ~id:"f-1");
-  show (Mock_state.update_follow !me ~id:"f-1" { state = Running });
+  show (Mock_state.update_follow !me ~id:"f-1" { state = Some Running; algo = None });
   show (Mock_state.stop_follow !me ~id:"f-9");
   [%expect
     {|
@@ -54,14 +54,14 @@ let%expect_test "pause, resume and stop" =
     ("follow cannot change state" (from paused) (to_ paused))
     f-1:paused f-2:running
     f-1:stopped f-2:running
-    ("follow cannot change state" (from stopped) (to_ running))
+    ("follow is stopped" f-1)
     ("no such follow" f-9)
     |}]
 ;;
 
 let%expect_test "following needs an active agent" =
   let leader = (List.hd_exn (Fixtures.leaders ())).address in
-  let request = { Follow_request.leader; scale = Multiplier 0.5; caps = Caps.default } in
+  let request = { Follow_request.leader; scale = Multiplier 0.5; caps = Caps.default; algo = None } in
   (match Mock_state.add_follow (me ()) request ~now:a_week_later with
    | Ok _ -> print_endline "followed without an agent"
    | Error e -> print_s [%sexp (e : Error.t)]);
