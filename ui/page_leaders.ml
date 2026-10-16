@@ -50,11 +50,54 @@ let cells (l : Leader.t) : Column.t -> N.t = function
 ;;
 
 let trader_cell (l : Leader.t) =
+  let flags = Option.value_map l.scoring ~default:[] ~f:(fun s -> s.integrity_flags) in
   Widgets.link
     (Leader l.address)
     [ N.div [ N.text (Option.value l.display_name ~default:(Address.short l.address)) ]
     ; N.div ~attrs:[ A.class_ "muted mono" ] [ N.text (Address.short l.address) ]
+    ; (match flags with
+       | [] -> N.none
+       | kinds ->
+         N.div
+           [ N.span
+               ~attrs:
+                 [ A.class_ "badge warning"
+                 ; A.title
+                     (String.concat ~sep:", " (List.map kinds ~f:Scoring_view.integrity_label))
+                 ]
+               [ N.textf "%d integrity flag%s" (List.length kinds)
+                   (if List.length kinds = 1 then "" else "s")
+               ]
+           ])
     ]
+;;
+
+(* Whether the order of this list means anything: the universe's persistence test and
+   selection statistics, above the table. *)
+let universe_banner (u : Scoring.Universe.t option) =
+  match u with
+  | None -> N.none
+  | Some u ->
+    N.div
+      ~attrs:
+        [ A.id "ranking-check"
+        ; A.classes
+            [ "notice"
+            ; (if Scoring_view.ranking_is_meaningful (Some u) then "ok" else "warning")
+            ]
+        ]
+      [ N.p [ N.text (Scoring_view.persistence_verdict u) ]
+      ; N.p
+          ~attrs:[ A.class_ "muted" ]
+          [ N.textf
+              "Probability of backtest overfitting %s; %d of %d leaders pass the                statistical gate; %d flagged by the integrity checks, %d left out of the                ranking."
+              (Scoring_view.probability u.pbo)
+              u.accepted
+              u.leaders_with_stats
+              u.flagged
+              u.excluded
+          ]
+      ]
 ;;
 
 let parse_float s = Float.of_string_opt (String.strip s)
@@ -103,7 +146,8 @@ let view (response : Leaders_response.t) ~sort ~set_sort ~filter ~set_filter =
       cells l Rank :: trader_cell l :: List.map columns ~f:(cells l))
   in
   N.div
-    [ filters ~filter ~set_filter
+    [ universe_banner response.universe
+    ; filters ~filter ~set_filter
     ; N.p
         ~attrs:[ A.class_ "muted" ]
         [ N.textf
