@@ -58,6 +58,29 @@ let scale_select ~(form : Follow_form.t) ~set_form =
     ]
 ;;
 
+let algo_select ~(form : Follow_form.t) ~set_form =
+  N.label
+    ~attrs:[ A.class_ "field" ]
+    [ N.span [ N.text "Execution" ]
+    ; N.select
+        ~attrs:
+          [ A.name "algo"
+          ; A.on_change (fun _ v ->
+              match Algo_choice.Kind.of_string v with
+              | Some kind -> set_form (Follow_form.with_algo form kind)
+              | None -> Effect.Ignore)
+          ]
+        (List.map Algo_choice.Kind.all ~f:(fun kind ->
+           N.option
+             ~attrs:
+               (A.value (Algo_choice.Kind.to_string kind)
+                ::
+                (if Algo_choice.Kind.equal kind form.algo then [ A.selected ] else []))
+             [ N.text (Algo_choice.Kind.label kind) ]))
+    ; N.span ~attrs:[ A.class_ "muted" ] [ N.text (Algo_choice.Kind.help form.algo) ]
+    ]
+;;
+
 let form_view ~form ~set_form ~errors =
   let field = text_field ~form ~set_form ~errors in
   N.div
@@ -71,6 +94,13 @@ let form_view ~form ~set_form ~errors =
     ; field Max_daily_loss
     ; field Min_order_notional
     ; field Allowlist
+    ; algo_select ~form ~set_form
+    ; (match form.algo with
+       | Immediate -> N.none
+       | Twap | Adaptive | Passive -> field Algo_seconds)
+    ; (match form.algo with
+       | Twap -> field Algo_slices
+       | Immediate | Adaptive | Passive -> N.none)
     ]
 ;;
 
@@ -140,7 +170,7 @@ let follow_effect
   let open Effect.Let_syntax in
   match validated with
   | Error _ -> Effect.Ignore
-  | Ok (scale, caps) ->
+  | Ok valid ->
     let%bind () =
       set_status
         (Status.Busy
@@ -158,7 +188,7 @@ let follow_effect
          in
          (backend : Backend.t).follow
            ~token:session.Auth.Session.token
-           { leader; scale; caps })
+           (Follow_form.request valid ~leader))
      with
      | Ok (_ : Follow.t) ->
        let%bind () = set_status Status.Idle in
@@ -322,10 +352,15 @@ let view
          N.div
            [ form_view ~form ~set_form ~errors
            ; (match validated with
-              | Ok (scale, _) ->
+              | Ok (v : Follow_form.Valid.t) ->
                 N.p
                   ~attrs:[ A.class_ "muted" ]
-                  [ N.text ("Target size: " ^ Scale_mode.to_string_hum scale ^ ".") ]
+                  [ N.text
+                      (sprintf
+                         "Target size: %s. Execution: %s."
+                         (Scale_mode.to_string_hum v.scale)
+                         (Algo_choice.describe v.algo))
+                  ]
               | Error _ -> N.none)
            ; (match agent with
               | Remote.Loaded check -> Widgets.notice (Agent_check.describe check)
