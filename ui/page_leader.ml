@@ -185,15 +185,104 @@ let alerts_section (s : Scoring.Detail.t) =
            ]))
 ;;
 
+let integrity_section (s : Scoring.Detail.t) =
+  match s.integrity with
+  | [] ->
+    N.div
+      ~attrs:[ A.id "leader-integrity" ]
+      [ Widgets.notice "No sign of wash trading, coordinated accounts or off-market fills." ]
+  | flags ->
+    N.ul
+      ~attrs:[ A.class_ "alerts"; A.id "leader-integrity" ]
+      (List.map flags ~f:(fun (f : Scoring.Integrity_flag.t) ->
+         N.li
+           [ N.span
+               ~attrs:[ A.class_ (Scoring_view.severity_class f.severity) ]
+               [ N.text f.severity ]
+           ; N.strong [ N.text (Scoring_view.integrity_label f.kind) ]
+           ; N.span [ N.text f.message ]
+           ; (match f.accounts with
+              | [] -> N.none
+              | accounts ->
+                N.span
+                  ~attrs:[ A.class_ "muted mono" ]
+                  [ N.text
+                      ("with "
+                       ^ String.concat
+                           ~sep:", "
+                           (List.map accounts ~f:(fun a ->
+                              match Address.of_string_opt a with
+                              | Some a -> Address.short a
+                              | None -> a)))
+                  ])
+           ]))
+;;
+
+let persistence_section (p : Scoring.Persistence.t) =
+  N.div
+    ~attrs:[ A.id "leader-persistence" ]
+    [ Widgets.stats
+        [ Widgets.stat ~label:"Ranking windows" (N.textf "%d" p.windows)
+        ; Widgets.stat
+            ~label:"Mean percentile"
+            (N.text (Option.value_map p.mean_percentile ~default:"-" ~f:Format.pct))
+        ; Widgets.stat ~label:"Windows in the top fifth" (N.textf "%d" p.top_quantile_windows)
+        ; Widgets.stat
+            ~label:"Universe rank correlation"
+            (N.text
+               (Option.value_map p.universe_rank_correlation ~default:"-" ~f:(sprintf "%.2f")))
+        ]
+    ; N.p
+        ~attrs:[ A.class_ "muted" ]
+        [ N.text
+            (if p.universe_persistent
+             then
+               "Rankings in this universe persist from one window to the next, so a                 leader's past percentile says something about the next window."
+             else
+               "Rankings in this universe do not persist from one window to the next: a                 high percentile here is not evidence of skill.")
+        ]
+    ]
+;;
+
+let stats_section (st : Scoring.Stats.t) =
+  N.div
+    ~attrs:[ A.id "leader-stats" ]
+    [ Widgets.stats
+        [ Widgets.stat ~label:"PSR" (N.text (Scoring_view.probability st.psr))
+        ; Widgets.stat ~label:"DSR" (N.text (Scoring_view.probability st.dsr))
+        ; Widgets.stat
+            ~label:"Sharpe (annualized)"
+            (N.text
+               (Option.value_map st.sharpe_annualized ~default:"-" ~f:(sprintf "%.2f")))
+        ; Widgets.stat
+            ~label:"Track record needed"
+            (N.text
+               (Option.value_map st.min_track_record_periods ~default:"-" ~f:(fun n ->
+                  sprintf "%s of %d periods" (Format.number ~decimals:0 n) st.periods)))
+        ; Widgets.stat ~label:"PBO (universe)" (N.text (Scoring_view.probability st.pbo))
+        ; Widgets.stat
+            ~label:"SPA p-value (universe)"
+            (N.text (Scoring_view.probability st.spa_p_value))
+        ]
+    ; N.p ~attrs:[ A.class_ "muted" ] [ N.text (Scoring_view.stats_verdict st) ]
+    ]
+;;
+
 let scoring_sections (d : Leader_detail.t) =
   match d.scoring with
   | None -> []
   | Some s ->
     [ Widgets.section "Leader score" [ score_section s ]
+    ; Widgets.section "Integrity" [ integrity_section s ]
     ; Widgets.section "Metrics" [ metrics_table s ]
-    ; Widgets.section "Capacity" [ capacity_section s ]
-    ; Widgets.section "Alerts" [ alerts_section s ]
     ]
+    @ Option.value_map s.persistence ~default:[] ~f:(fun p ->
+      [ Widgets.section "Persistence" [ persistence_section p ] ])
+    @ Option.value_map s.stats ~default:[] ~f:(fun st ->
+      [ Widgets.section "Selection statistics" [ stats_section st ] ])
+    @ [ Widgets.section "Capacity" [ capacity_section s ]
+      ; Widgets.section "Alerts" [ alerts_section s ]
+      ]
 ;;
 
 let view (d : Leader_detail.t) =
