@@ -201,7 +201,8 @@ async function main() {
   expectRequest("POST", "/agent/new", bearer);
   expectRequest("POST", "/agent/approved", (r) => bearer(r) && r.body.approve_agent.signature_chain_id === "0x66eee" && r.body.signature.startsWith("0x4444"));
   expectRequest("POST", "/builder-fee", (r) => bearer(r) && r.body.approve_builder_fee.max_fee_rate === "0.01%");
-  expectRequest("POST", "/follows", (r) => bearer(r) && r.body.leader === leader && r.body.scale.kind === "equity_ratio" && r.body.caps.max_leverage === 3);
+  // immediate execution sends no algo at all: the request is the same as before algorithms
+  expectRequest("POST", "/follows", (r) => bearer(r) && r.body.leader === leader && r.body.scale.kind === "equity_ratio" && r.body.caps.max_leverage === 3 && !("algo" in r.body));
   const order = requests.map((r) => `${r.method} ${r.path}`).filter((s) => /agent|builder|POST \/follows/.test(s));
   if (order.join(",") !== "POST /agent/new,POST /agent/approved,POST /builder-fee,POST /follows") fail("order " + order);
   step("follow: POST /agent/new, /agent/approved, /builder-fee, then /follows");
