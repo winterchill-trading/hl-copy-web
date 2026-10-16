@@ -85,6 +85,11 @@ async function main() {
   if (!text(rows()[0]).includes("meanrev")) fail("rank 1 should be meanrev");
   step("leaderboard renders 8 leaders from dev/leaders.json");
 
+  const check = document.querySelector("#ranking-check");
+  if (!check || !text(check).includes("The ranking does not persist")) fail("ranking check missing above the table");
+  if (!bodyText().includes("1 integrity flag")) fail("integrity badge missing on the flagged row");
+  step("the ranking check says the order does not persist; the flagged leader carries a badge");
+
   click(byText("span.sortable", "ROI"), "ROI header");
   await waitFor("ROI sort", () => text(rows()[0]).includes("trend-desk"));
   step("clicking ROI sorts by ROI, best first");
@@ -123,6 +128,11 @@ async function main() {
   if (!bodyText().includes("Composite score")) fail("composite score missing");
   if (!document.querySelector("#leader-alerts") && !bodyText().includes("No behaviour changes detected.")) fail("alerts section missing");
   step("leader page shows the score components, 14 metrics, the capacity curve and alerts");
+
+  if (!document.querySelector("#leader-integrity")) fail("integrity section missing");
+  if (!document.querySelector("#leader-persistence") || !bodyText().includes("Ranking windows")) fail("persistence section missing");
+  if (!document.querySelector("#leader-stats") || !bodyText().includes("statistical gate")) fail("selection statistics missing");
+  step("leader page shows integrity, persistence and the selection statistics");
 
   // Dashboard before login
   location.hash = "#/dashboard";
@@ -190,10 +200,17 @@ async function main() {
   location.hash = "#/follow/" + other;
   await waitFor("direct follow button", () => byText("button", "Follow"));
   if (!bodyText().includes("Your trading agent is approved.")) fail("agent status line missing");
+  const algo = all("select").find((el) => el.getAttribute("name") === "algo");
+  if (!algo) fail("execution select missing");
+  algo.value = "twap";
+  algo.dispatchEvent(makeEvent("change"));
+  await waitFor("TWAP fields", () => all("input").find((i) => i.getAttribute("name") === "Algo_slices"));
+  if (!bodyText().includes("Execution: TWAP 60 s in 6 slices.")) fail("TWAP summary missing");
   click(byText("button", "Follow"), "follow");
   await waitFor("fourth follow", () => location.hash === "#/dashboard" && document.querySelector("#follow-f-4"));
   if (wallet.calls.filter((c) => c.method === "eth_signTypedData_v4").length !== 2) fail("no new signature expected");
-  step("with an active agent, following needs no signature");
+  if (!text(document.querySelector("#follow-f-4")).includes("TWAP 60 s in 6 slices")) fail("follow card should show the algorithm");
+  step("with an active agent, following needs no signature; TWAP picked on the form shows on the card");
 
   if (consoleErrors.length) fail("console errors: " + consoleErrors.join(" | "));
   print(`all ${steps.length} steps passed in ${Date.now() - t0} ms; ${XMLHttpRequest.log.length} fixture requests`);
