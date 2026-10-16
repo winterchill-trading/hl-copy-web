@@ -172,6 +172,47 @@ def scoring(leaders, details, rng):
     return out
 
 
+def universe_checks(leaders, scored, rng):
+    """leader-scoring's universe checks, as the API flattens them, and per leader its
+    persistence row, selection statistics and integrity flags (mock values)."""
+    n = len(leaders)
+    universe = {
+        "persistent": False, "fading": False, "formation": "sharpe", "window_days": 30.0,
+        "periods": 9, "rank_correlation": 0.04, "rank_correlation_lower": -0.05,
+        "rank_correlation_upper": 0.13, "top_stays_top_half": 0.5,
+        "decay": [0.04, 0.03, None], "transition": [[0.25, 0.25, 0.25, 0.25]] * 4,
+        "top_k": 3, "top_k_return": 0.021, "random_mean": 0.019,
+        "baseline_percentile": 0.56, "baseline_p_value": 0.44,
+        "leaders_with_stats": n, "trials": n, "pbo": 0.38, "spa_p_value": 0.31,
+        "accepted": 1, "flagged": 1, "excluded": 1,
+    }
+    per_leader = {}
+    for i, leader in enumerate(leaders):
+        addr = leader["address"]
+        psr = round(rng.uniform(0.4, 0.999), 4)
+        dsr = round(psr * rng.uniform(0.0, 0.5), 4) if i else 0.96
+        flags = []
+        if i == 3:
+            flags = [{"kind": "co_trading", "severity": "critical",
+                      "message": "trades in step with 2 other watched accounts (cluster of 3)",
+                      "accounts": [leaders[4]["address"], leaders[5]["address"]]}]
+        percentiles = [{"time": AS_OF - (k + 1) * 30 * DAY, "percentile": round(rng.random(), 4)}
+                       for k in range(3)]
+        persistence = {"windows": 3,
+                       "mean_percentile": round(sum(p["percentile"] for p in percentiles) / 3, 4),
+                       "top_quantile_windows": sum(p["percentile"] >= 0.8 for p in percentiles),
+                       "percentiles": percentiles, "universe_persistent": False,
+                       "universe_rank_correlation": 0.04}
+        accepted = i == 0
+        stats = {"periods": 90, "periods_per_year": 365.25,
+                 "sharpe_annualized": round(rng.uniform(-0.5, 3), 4), "psr": psr, "dsr": dsr,
+                 "min_track_record_periods": round(rng.uniform(40, 900)), "pbo": 0.38,
+                 "spa_p_value": 0.31, "accepted": accepted,
+                 "reasons": [] if accepted else [f"deflated Sharpe ratio {dsr:.2f} below 0.95"]}
+        per_leader[addr] = (flags, persistence, stats)
+    return universe, per_leader
+
+
 def main():
     rng = random.Random(7)
     leaders, details = [], []
@@ -211,7 +252,26 @@ def main():
     scored = scoring(leaders, details, random.Random(11))
     for leader in leaders:
         leader["scoring"] = scored[leader["address"]][0]
-    write("leaders.json", {"as_of": AS_OF, "leaders": leaders})
+    # again a separate generator: the universe checks leave the values above unchanged
+    universe, checks = universe_checks(leaders, scored, random.Random(13))
+    for leader in leaders:
+        flags, persistence, stats = checks[leader["address"]]
+        summary = leader["scoring"]
+        if flags:
+            summary["integrity_flags"] = [f["kind"] for f in flags]
+            summary["excluded"] = True
+            summary["eligible"] = False
+        summary["persistence_percentile"] = persistence["mean_percentile"]
+        summary["psr"] = stats["psr"]
+        summary["dsr"] = stats["dsr"]
+        detail = scored[leader["address"]][1]
+        detail["persistence"] = persistence
+        detail["stats"] = stats
+        if flags:
+            detail["integrity"] = flags
+            detail["eligible"] = False
+            detail["reasons"] = ["integrity: " + f["message"] for f in flags]
+    write("leaders.json", {"as_of": AS_OF, "leaders": leaders, "universe": universe})
     for leader, curve in details:
         write(f"leaders/{leader['address']}.json", {
             "leader": leader, "equity_curve": curve, "fills": fills(rng, 40),
