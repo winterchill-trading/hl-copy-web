@@ -5,6 +5,7 @@ module Route = Route
 module Format = Format
 module Leader_table = Leader_table
 module Chart = Chart
+module Algo_choice = Algo_choice
 module Follow_form = Follow_form
 module Mock_state = Mock_state
 module Agent_check = Agent_check
