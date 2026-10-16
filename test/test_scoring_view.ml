@@ -128,3 +128,80 @@ let%expect_test "every mock leader detail carries scoring that formats" =
     0xfb0349 score=51.4 metrics=14 capacity=true alerts=0
     |}]
 ;;
+
+let universe : Scoring.Universe.t =
+  { persistent = false
+  ; fading = false
+  ; formation = "sharpe"
+  ; window_days = Some 30.
+  ; periods = 10
+  ; rank_correlation = Some 0.051
+  ; rank_correlation_lower = Some (-0.025)
+  ; rank_correlation_upper = Some 0.12
+  ; top_stays_top_half = Some 0.49
+  ; decay = [ Some 0.05; Some 0.04; None ]
+  ; transition = []
+  ; top_k = Some 10
+  ; top_k_return = Some 0.337
+  ; random_mean = Some 0.338
+  ; baseline_percentile = Some 0.48
+  ; baseline_p_value = Some 0.52
+  ; leaders_with_stats = 282
+  ; trials = Some 282
+  ; pbo = Some 0.14
+  ; spa_p_value = Some 0.2
+  ; accepted = 2
+  ; flagged = 3
+  ; excluded = 1
+  }
+;;
+
+let%expect_test "persistence verdicts and the statistical gate" =
+  print_endline (Scoring_view.persistence_verdict universe);
+  print_endline
+    (Scoring_view.persistence_verdict
+       { universe with persistent = true; rank_correlation_lower = Some 0.03 });
+  print_endline
+    (Scoring_view.persistence_verdict
+       { universe with rank_correlation = None; top_k = None });
+  print_s
+    [%message
+      ""
+        ~meaningful:
+          (List.map
+             [ None; Some universe; Some { universe with persistent = true } ]
+             ~f:Scoring_view.ranking_is_meaningful
+           : bool list)];
+  let stats : Scoring.Stats.t =
+    { periods = 120
+    ; periods_per_year = 365.25
+    ; sharpe_annualized = Some 1.9
+    ; psr = Some 0.991
+    ; dsr = Some 0.12
+    ; min_track_record_periods = Some 73.
+    ; pbo = Some 0.14
+    ; spa_p_value = Some 0.2
+    ; accepted = Some false
+    ; reasons = [ "deflated Sharpe ratio 0.12 below 0.95" ]
+    }
+  in
+  print_endline (Scoring_view.stats_verdict stats);
+  print_endline (Scoring_view.stats_verdict { stats with accepted = Some true; reasons = [] });
+  print_endline (Scoring_view.probability stats.psr);
+  List.iter
+    [ "wash_trade"; "co_trading"; "off_book_price"; "something_new" ]
+    ~f:(fun k -> print_endline (Scoring_view.integrity_label k));
+  [%expect {|
+    Rank correlation from one window to the next (30-day windows): 0.05 (95% interval -0.03 to 0.12) over 10 periods. The top 10 returned 33.7% in the next window against 33.8% for random picks (better than 48% of random draws). The ranking does not persist: treat the order as noise, not as a list of the best leaders.
+    Rank correlation from one window to the next (30-day windows): 0.05 (95% interval 0.03 to 0.12) over 10 periods. The top 10 returned 33.7% in the next window against 33.8% for random picks (better than 48% of random draws). The ranking persists: past leaders tend to stay ahead.
+    Not enough history to test the ranking (30-day windows). The ranking does not persist: treat the order as noise, not as a list of the best leaders.
+    (meaningful (false false true))
+    Fails the statistical gate: deflated Sharpe ratio 0.12 below 0.95.
+    Passes the statistical gate (PSR and DSR at least 0.95, PBO at most 0.5).
+    0.99
+    Wash trades
+    Trades in step with other accounts
+    Fills away from the market
+    Something new
+    |}]
+;;

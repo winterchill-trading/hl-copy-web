@@ -124,3 +124,76 @@ module Capacity_chart = struct
         }
   ;;
 end
+
+let integrity_label = function
+  | "self_trade" -> "Trades with itself"
+  | "wash_trade" -> "Wash trades"
+  | "counterparty" -> "Trades with other watched accounts"
+  | "co_trading" -> "Trades in step with other accounts"
+  | "front_running" -> "Trades ahead of large flow"
+  | "creation_burst" -> "Created with other accounts"
+  | "off_book_price" -> "Fills away from the market"
+  | other -> kind_label other
+;;
+
+let probability = function
+  | None -> "-"
+  | Some p -> sprintf "%.2f" p
+;;
+
+let ranking_is_meaningful = function
+  | Some (u : Scoring.Universe.t) -> u.persistent && not u.fading
+  | None -> false
+;;
+
+let persistence_verdict (u : Scoring.Universe.t) =
+  let window =
+    Option.value_map u.window_days ~default:"" ~f:(fun d ->
+      sprintf " (%s-day windows)" (Format.number ~decimals:0 d))
+  in
+  let correlation =
+    match u.rank_correlation, u.rank_correlation_lower, u.rank_correlation_upper with
+    | Some r, Some lo, Some hi ->
+      sprintf
+        "Rank correlation from one window to the next%s: %.2f (95%% interval %.2f to \
+         %.2f) over %d periods."
+        window
+        r
+        lo
+        hi
+        u.periods
+    | Some r, _, _ ->
+      sprintf "Rank correlation from one window to the next%s: %.2f." window r
+    | None, _, _ -> sprintf "Not enough history to test the ranking%s." window
+  in
+  let baseline =
+    match u.top_k, u.top_k_return, u.random_mean, u.baseline_percentile with
+    | Some k, Some top, Some random, Some pct ->
+      sprintf
+        " The top %d returned %s in the next window against %s for random picks \
+         (better than %.0f%% of random draws)."
+        k
+        (Format.pct top)
+        (Format.pct random)
+        (100. *. pct)
+    | _ -> ""
+  in
+  let verdict =
+    if u.persistent && u.fading
+    then " The ranking used to persist but has stopped recently."
+    else if u.persistent
+    then " The ranking persists: past leaders tend to stay ahead."
+    else
+      " The ranking does not persist: treat the order as noise, not as a list of the \
+       best leaders."
+  in
+  correlation ^ baseline ^ verdict
+;;
+
+let stats_verdict (s : Scoring.Stats.t) =
+  match s.accepted, s.reasons with
+  | Some true, _ -> "Passes the statistical gate (PSR and DSR at least 0.95, PBO at most 0.5)."
+  | Some false, (_ :: _ as reasons) -> "Fails the statistical gate: " ^ String.concat ~sep:"; " reasons ^ "."
+  | Some false, [] -> "Fails the statistical gate."
+  | None, _ -> "No statistical gate was applied."
+;;

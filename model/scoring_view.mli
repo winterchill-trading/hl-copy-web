@@ -40,3 +40,25 @@ module Capacity_chart : sig
   (** [None] with fewer than two points. *)
   val of_capacity : Scoring.Capacity.t -> width:float -> height:float -> t option
 end
+
+(** ["Wash trades"] from ["wash_trade"], and so on for every integrity flag kind; unknown
+    kinds as {!kind_label}. *)
+val integrity_label : string -> string
+
+(** One paragraph on whether this universe's rankings persist, for the leaders page and
+    the leader page: the rank correlation from one window to the next with its interval,
+    and how the top picks did against random picks. The ranking is only called meaningful
+    when the universe check says it is persistent. *)
+val persistence_verdict : Scoring.Universe.t -> string
+
+(** Whether a page may present the ranking as "top leaders": only when the universe check
+    found it persistent and not fading. [None] (no check yet) is [false]. *)
+val ranking_is_meaningful : Scoring.Universe.t option -> bool
+
+(** ["0.97"]; ["-"] for [None]. Probabilities shown as decimals, as the statistics
+    literature writes them. *)
+val probability : float option -> string
+
+(** One sentence on the statistical gate: ["passes: PSR and DSR at least 0.95, PBO at most
+    0.5"] or the reasons it fails. *)
+val stats_verdict : Scoring.Stats.t -> string
