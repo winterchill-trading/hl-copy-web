@@ -155,6 +155,101 @@ module Scoring : sig
       ; sharpe : float option
       ; max_drawdown : float option
       ; leverage_p95 : float option
+      ; integrity_flags : string list
+      (** {!Integrity_flag.t} kinds; absent when there are none *)
+      ; excluded : bool (** an integrity flag took the leader out of the ranking *)
+      ; persistence_percentile : float option
+      (** the leader's mean formation percentile over the persistence windows *)
+      ; psr : float option (** probabilistic Sharpe ratio *)
+      ; dsr : float option (** deflated Sharpe ratio, the leaders being the trials *)
+      }
+    [@@deriving compare, equal, sexp, yojson]
+  end
+
+  (** A sign that a leader is manipulated or cannot be copied. [kind]: ["self_trade"],
+      ["wash_trade"], ["counterparty"], ["co_trading"], ["front_running"],
+      ["creation_burst"], ["off_book_price"]; [severity] as for {!Alert}; [accounts]: the
+      other accounts involved (a cluster or a counterparty group), absent when none. *)
+  module Integrity_flag : sig
+    type t =
+      { kind : string
+      ; severity : string
+      ; message : string
+      ; accounts : string list
+      }
+    [@@deriving compare, equal, sexp, yojson]
+  end
+
+  module Persistence_point : sig
+    type t =
+      { time : Time_ms.t (** start of the formation window *)
+      ; percentile : float (** [0.] to [1.], 1 is the best *)
+      }
+    [@@deriving compare, equal, sexp, yojson]
+  end
+
+  (** Where the leader stood in each ranking window, and whether rankings persist at all
+      in this universe. *)
+  module Persistence : sig
+    type t =
+      { windows : int
+      ; mean_percentile : float option
+      ; top_quantile_windows : int
+      ; percentiles : Persistence_point.t list
+      ; universe_persistent : bool
+      ; universe_rank_correlation : float option
+      }
+    [@@deriving compare, equal, sexp, yojson]
+  end
+
+  (** Selection-bias statistics of the leader's returns (backtest-stats). [dsr] treats
+      every scored leader as a trial; [pbo] and [spa_p_value] are the universe's. *)
+  module Stats : sig
+    type t =
+      { periods : int
+      ; periods_per_year : float
+      ; sharpe_annualized : float option
+      ; psr : float option
+      ; dsr : float option
+      ; min_track_record_periods : float option
+      ; pbo : float option
+      ; spa_p_value : float option
+      ; accepted : bool option (** the statistical gate's verdict *)
+      ; reasons : string list (** why the gate rejects *)
+      }
+    [@@deriving compare, equal, sexp, yojson]
+  end
+
+  (** The universe-level honesty checks behind the ranking: does the ranking persist from
+      one window to the next (rank correlation with its interval, decay, transition shares
+      between quintiles, the top [top_k] against random picks), the selection statistics,
+      and how many leaders the integrity checks flagged and excluded. *)
+  module Universe : sig
+    type t =
+      { persistent : bool
+      ; fading : bool
+      ; formation : string
+      ; window_days : float option
+      ; periods : int
+      ; rank_correlation : float option
+      ; rank_correlation_lower : float option
+      ; rank_correlation_upper : float option
+      ; top_stays_top_half : float option
+      ; decay : float option list (** mean rank correlation 1, 2, ... windows ahead *)
+      ; transition : float list list
+      (** row [i]: shares of formation quintile [i] (bottom first) in each outcome quintile *)
+      ; top_k : int option
+      ; top_k_return : float option
+      ; random_mean : float option
+      ; baseline_percentile : float option
+      ; baseline_p_value : float option
+      ; leaders_with_stats : int
+      ; trials : int option
+      ; pbo : float option
+      ; spa_p_value : float option
+      ; accepted : int
+      ; flagged : int
+      ; excluded : int
       }
     [@@deriving compare, equal, sexp, yojson]
   end
@@ -176,6 +271,9 @@ module Scoring : sig
       ; equity_curve : Equity_point.t list (** the series the metrics use, oldest first *)
       ; capacity : Capacity.t option (** absent without order books *)
       ; alerts : Alert.t list (** oldest first *)
+      ; persistence : Persistence.t option (** absent before the universe checks ran *)
+      ; stats : Stats.t option
+      ; integrity : Integrity_flag.t list (** absent when there are none *)
       }
     [@@deriving compare, equal, sexp, yojson]
   end
@@ -201,6 +299,7 @@ module Leaders_response : sig
   type t =
     { as_of : Time_ms.t
     ; leaders : Leader.t list (** sorted by [rank] *)
+    ; universe : Scoring.Universe.t option (** absent before the universe checks ran *)
     }
   [@@deriving compare, equal, sexp, yojson]
 end
@@ -403,6 +502,10 @@ module Follow_request : sig
     { leader : Address.t
     ; scale : Scale_mode.t
     ; caps : Caps.t
+    ; algo : string option
+    (** how the engine executes the copy orders, in execution-algos' short form:
+        ["immediate"] (the default when absent), ["twap:60s:6"], ["passive:30s"],
+        ["adaptive:20s"], ...; the server rejects anything it cannot parse *)
     }
   [@@deriving compare, equal, sexp, yojson]
 end
@@ -418,6 +521,42 @@ module Follow_state : sig
   val to_string : t -> string
 end
 
+(** One parent order the engine finished, from its [/status]. [shortfall_bps] is the
+    cost against the price when the order was planned, fees included. *)
+module Execution_report : sig
+  type t =
+    { time : Time_ms.t option
+    ; algo : string
+    ; outcome : string (** ["filled"], ["partial"], ["cancelled"], ... *)
+    ; side : Side.t
+    ; target : float
+    ; filled : float
+    ; avg_px : float
+    ; arrival_px : float
+    ; children : int
+    ; fees : float
+    ; arrival_slippage_bps : float
+    ; shortfall_bps : float
+    }
+  [@@deriving compare, equal, sexp, yojson]
+end
+
+(** The engine's execution totals for one follow. *)
+module Execution : sig
+  type t =
+    { algo : string
+    ; parents : int
+    ; filled_parents : int
+    ; fill_rate : float (** filled over target notional *)
+    ; shortfall_bps : float
+    ; slippage_bps : float
+    ; fees : float (** USD *)
+    ; active : int (** parents being worked *)
+    ; recent : Execution_report.t list (** newest first *)
+    }
+  [@@deriving compare, equal, sexp, yojson]
+end
+
 (** [GET /follows/<id>] *)
 module Follow : sig
   type t =
@@ -429,14 +568,21 @@ module Follow : sig
     ; created_at : Time_ms.t
     ; pnl : float (** USD attributed to this follow since it started *)
     ; positions : Position.t list (** the follower's positions this follow opened *)
+    ; algo : string option (** absent for ["immediate"] *)
+    ; execution : Execution.t option (** absent until the engine reports it *)
     }
   [@@deriving compare, equal, sexp, yojson]
 end
 
-(** [PATCH /follows/<id>]: pause ([Paused]) or resume ([Running]); the reply is the
+(** [PATCH /follows/<id>]: pause ([Paused]) or resume ([Running]) and/or change the
+    execution algorithm (["immediate"] goes back to the default); the reply is the
     updated {!Follow.t}. [DELETE /follows/<id>] stops a follow for good. *)
 module Follow_update : sig
-  type t = { state : Follow_state.t } [@@deriving compare, equal, sexp, yojson]
+  type t =
+    { state : Follow_state.t option
+    ; algo : string option
+    }
+  [@@deriving compare, equal, sexp, yojson]
 end
 
 (** [GET /me], authenticated: the user's account, agent and follows. *)

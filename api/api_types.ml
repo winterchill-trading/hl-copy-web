@@ -178,6 +178,88 @@ module Scoring = struct
       ; sharpe : float option [@default None]
       ; max_drawdown : float option [@default None]
       ; leverage_p95 : float option [@default None]
+      ; integrity_flags : string list
+           [@yojson.default []] [@yojson_drop_if List.is_empty] [@sexp.list]
+      ; excluded : bool [@yojson.default false] [@yojson_drop_if not] [@sexp.bool]
+      ; persistence_percentile : float option
+           [@yojson.default None] [@yojson_drop_if Option.is_none] [@sexp.option]
+      ; psr : float option [@yojson.default None] [@yojson_drop_if Option.is_none] [@sexp.option]
+      ; dsr : float option [@yojson.default None] [@yojson_drop_if Option.is_none] [@sexp.option]
+      }
+    [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
+  end
+
+  module Integrity_flag = struct
+    type t =
+      { kind : string
+      ; severity : string
+      ; message : string
+      ; accounts : string list [@yojson.default []] [@yojson_drop_if List.is_empty] [@sexp.list]
+      }
+    [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
+  end
+
+  module Persistence_point = struct
+    type t =
+      { time : Time_ms.t
+      ; percentile : float
+      }
+    [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
+  end
+
+  module Persistence = struct
+    type t =
+      { windows : int
+      ; mean_percentile : float option [@default None]
+      ; top_quantile_windows : int
+      ; percentiles : Persistence_point.t list [@default []]
+      ; universe_persistent : bool
+      ; universe_rank_correlation : float option [@default None]
+      }
+    [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
+  end
+
+  module Stats = struct
+    type t =
+      { periods : int
+      ; periods_per_year : float
+      ; sharpe_annualized : float option [@default None]
+      ; psr : float option [@default None]
+      ; dsr : float option [@default None]
+      ; min_track_record_periods : float option [@default None]
+      ; pbo : float option [@default None]
+      ; spa_p_value : float option [@default None]
+      ; accepted : bool option [@default None]
+      ; reasons : string list [@default []]
+      }
+    [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
+  end
+
+  module Universe = struct
+    type t =
+      { persistent : bool
+      ; fading : bool
+      ; formation : string
+      ; window_days : float option [@default None]
+      ; periods : int
+      ; rank_correlation : float option [@default None]
+      ; rank_correlation_lower : float option [@default None]
+      ; rank_correlation_upper : float option [@default None]
+      ; top_stays_top_half : float option [@default None]
+      ; decay : float option list [@default []]
+      ; transition : float list list [@default []]
+      ; top_k : int option [@default None]
+      ; top_k_return : float option [@default None]
+      ; random_mean : float option [@default None]
+      ; baseline_percentile : float option [@default None]
+      ; baseline_p_value : float option [@default None]
+      ; leaders_with_stats : int
+      ; trials : int option [@default None]
+      ; pbo : float option [@default None]
+      ; spa_p_value : float option [@default None]
+      ; accepted : int
+      ; flagged : int
+      ; excluded : int
       }
     [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
   end
@@ -197,6 +279,11 @@ module Scoring = struct
       ; equity_curve : Equity_point.t list
       ; capacity : Capacity.t option [@default None]
       ; alerts : Alert.t list [@default []]
+      ; persistence : Persistence.t option
+           [@yojson.default None] [@yojson_drop_if Option.is_none] [@sexp.option]
+      ; stats : Stats.t option [@yojson.default None] [@yojson_drop_if Option.is_none] [@sexp.option]
+      ; integrity : Integrity_flag.t list
+           [@yojson.default []] [@yojson_drop_if List.is_empty] [@sexp.list]
       }
     [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
   end
@@ -221,6 +308,8 @@ module Leaders_response = struct
   type t =
     { as_of : Time_ms.t
     ; leaders : Leader.t list
+    ; universe : Scoring.Universe.t option
+         [@yojson.default None] [@yojson_drop_if Option.is_none] [@sexp.option]
     }
   [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
 end
@@ -501,6 +590,7 @@ module Follow_request = struct
     { leader : Address.t
     ; scale : Scale_mode.t
     ; caps : Caps.t
+    ; algo : string option [@yojson.default None] [@yojson_drop_if Option.is_none] [@sexp.option]
     }
   [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
 end
@@ -530,6 +620,39 @@ module Follow_state = struct
   ;;
 end
 
+module Execution_report = struct
+  type t =
+    { time : Time_ms.t option [@default None]
+    ; algo : string
+    ; outcome : string
+    ; side : Side.t
+    ; target : float
+    ; filled : float
+    ; avg_px : float
+    ; arrival_px : float
+    ; children : int
+    ; fees : float
+    ; arrival_slippage_bps : float
+    ; shortfall_bps : float
+    }
+  [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
+end
+
+module Execution = struct
+  type t =
+    { algo : string
+    ; parents : int
+    ; filled_parents : int
+    ; fill_rate : float
+    ; shortfall_bps : float
+    ; slippage_bps : float
+    ; fees : float
+    ; active : int
+    ; recent : Execution_report.t list [@default []]
+    }
+  [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
+end
+
 module Follow = struct
   type t =
     { id : string
@@ -540,12 +663,19 @@ module Follow = struct
     ; created_at : Time_ms.t
     ; pnl : float
     ; positions : Position.t list
+    ; algo : string option [@yojson.default None] [@yojson_drop_if Option.is_none] [@sexp.option]
+    ; execution : Execution.t option
+         [@yojson.default None] [@yojson_drop_if Option.is_none] [@sexp.option]
     }
   [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
 end
 
 module Follow_update = struct
-  type t = { state : Follow_state.t }
+  type t =
+    { state : Follow_state.t option
+         [@yojson.default None] [@yojson_drop_if Option.is_none] [@sexp.option]
+    ; algo : string option [@yojson.default None] [@yojson_drop_if Option.is_none] [@sexp.option]
+    }
   [@@deriving compare, equal, sexp, yojson] [@@yojson.allow_extra_fields]
 end
 

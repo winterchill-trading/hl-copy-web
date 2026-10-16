@@ -169,7 +169,8 @@ let%expect_test "approveBuilderFee typed data message" =
 
 let%expect_test "follow states, updates and endpoints" =
   List.iter Follow_state.all ~f:(fun s -> round_trip (module Follow_state) s);
-  round_trip (module Follow_update) { state = Paused };
+  round_trip (module Follow_update) { state = Some Paused; algo = None };
+  round_trip (module Follow_update) { state = None; algo = Some "twap:60s:6" };
   List.iter
     Endpoint.
       [ leaders
@@ -190,6 +191,7 @@ let%expect_test "follow states, updates and endpoints" =
     "paused"
     "stopped"
     {"state":"paused"}
+    {"algo":"twap:60s:6"}
     /leaders
     /leaders/0xabcdef0123456789abcdef0123456789abcdef01
     /auth/challenge
